@@ -19,7 +19,6 @@ namespace MoreAdminCommands
 {
     public class Cmds
     {
-
         #region FindCommand
         public static void FindCommand(CommandArgs args)
         {
@@ -138,8 +137,10 @@ namespace MoreAdminCommands
                 {
                     if (!plyList[0].Group.HasPermission("autokill") || args.Player == plyList[0])
                     {
-                        MAC.autoKill[plyList[0].Index] = !MAC.autoKill[plyList[0].Index];
-                        if (MAC.autoKill[plyList[0].Index])
+                        var player = Utils.GetPlayers(plyList[0].Index);
+
+                        player.autoKill = !player.autoKill;
+                        if (player.autoKill)
                         {
                             args.Player.SendInfoMessage(plyList[0].Name + " is now being auto-killed.");
                             plyList[0].SendInfoMessage("You are now being auto-killed. " + 
@@ -313,7 +314,7 @@ namespace MoreAdminCommands
         #endregion
 
         #region FreezeTime
-        public void FreezeTime(CommandArgs args)
+        public static void FreezeTime(CommandArgs args)
         {
             MAC.timeFrozen = !MAC.timeFrozen;
             MAC.freezeDayTime = Main.dayTime;
@@ -331,7 +332,7 @@ namespace MoreAdminCommands
         #endregion
 
         #region KillAll
-        private static void KillAll(CommandArgs args)
+        public static void KillAll(CommandArgs args)
         {
             foreach (TSPlayer plr in TShock.Players)
             {
@@ -349,7 +350,7 @@ namespace MoreAdminCommands
         #endregion
 
         #region ForceGive
-        private static void ForceGive(CommandArgs args)
+        public static void ForceGive(CommandArgs args)
         {
             if (args.Parameters.Count < 2)
             {
@@ -409,8 +410,8 @@ namespace MoreAdminCommands
                             plr.GiveItem(item.type, item.name, item.width, item.height, item.maxStack);
                         if (itemAmount - (itemAmount / item.maxStack) * item.maxStack != 0)
                             plr.GiveItem(item.type, item.name, item.width, item.height, itemAmount - (itemAmount / item.maxStack) * item.maxStack);
-                        args.Player.SendMessage(string.Format("Gave {0} {1} {2}(s).", plr.Name, itemAmount, item.name));
-                        plr.SendMessage(string.Format("{0} gave you {1} {2}(s).", args.Player.Name, itemAmount, item.name));
+                        args.Player.SendInfoMessage(string.Format("Gave {0} {1} {2}(s).", plr.Name, itemAmount, item.name));
+                        plr.SendInfoMessage(string.Format("{0} gave you {1} {2}(s).", args.Player.Name, itemAmount, item.name));
                     }
                 }
                 else
@@ -421,886 +422,154 @@ namespace MoreAdminCommands
         }
         #endregion
 
-        public static void permaBuff(CommandArgs args)
-        {
-            if (args.Parameters.Count == 0)
-            {
-                args.Player.SendErrorMessage("Improper Syntax! Proper Syntax: /permabuff buff [player]");
-            }
-            else if (args.Parameters.Count == 1)
-            {
-
-                int id = 0;
-                bool isGroup = false;
-                if (!int.TryParse(args.Parameters[0], out id))
-                {
-                    var found = TShockAPI.TShock.Utils.GetBuffByName(args.Parameters[0]);
-                    List<int> found2 = GetGroupBuffByName(args.Parameters[0]);
-                    if (args.Parameters[0].ToLower() == "off")
-                    {
-
-                        if (buffsUsed[args.Player.Index].Count() > 0)
-                        {
-
-                            buffsUsed[args.Player.Index].Clear();
-                            args.Player.SendMessage("You have had all permabuffs removed.");
-
-                        }
-                        else
-                        {
-
-                            args.Player.SendMessage("You do not currently have any permabuffs applied (solely) to yourself.");
-
-                        }
-                        return;
-
-                    }
-                    if (found.Count + found2.Count == 0)
-                    {
-                        args.Player.SendMessage("Invalid buff name!", Color.Red);
-                        return;
-                    }
-                    else if (found.Count + found2.Count > 1)
-                    {
-                        args.Player.SendMessage(string.Format("More than one ({0}) buff matched!", found.Count), Color.Red);
-                        return;
-                    }
-                    if (found.Count == 1)
-                    {
-
-                        id = found[0];
-
-                    }
-                    else if (found2.Count == 1)
-                    {
-
-                        id = found2[0];
-                        isGroup = true;
-
-                    }
-                    else
-                    {
-
-                        return;
-
-                    }
-                }
-                if (!isGroup)
-                {
-                    if (id > 0 && id < Main.maxBuffs)
-                    {
-                        if (!buffsUsed[args.Player.Index].Contains(id))
-                        {
-                            args.Player.SetBuff(id, short.MaxValue);
-                            buffsUsed[args.Player.Index].Add(id);
-                            args.Player.SendMessage(string.Format("You have permabuffed yourself with {0}({1})!",
-                                TShockAPI.TShock.Utils.GetBuffName(id), TShockAPI.TShock.Utils.GetBuffDescription(id)), Color.Green);
-                        }
-                        else
-                        {
-                            buffsUsed[args.Player.Index].Remove(id);
-                            args.Player.SendMessage(string.Format("You have removed your {0} permabuff.",
-                                TShockAPI.TShock.Utils.GetBuffName(id)), Color.Green);
-
-                        }
-                    }
-                }
-                else
-                {
-
-                    foreach (int id2 in buffGroups.Values.ToArray()[id])
-                    {
-                        args.Player.SetBuff(id2, short.MaxValue);
-                        if (!buffsUsed[args.Player.Index].Contains(id2))
-                            buffsUsed[args.Player.Index].Add(id2);
-                        args.Player.SendMessage(string.Format("You have permabuffed yourself with {0}({1})!",
-                            TShockAPI.TShock.Utils.GetBuffName(id2), TShockAPI.TShock.Utils.GetBuffDescription(id2)), Color.Green);
-                    }
-
-                }
-
-            }
-            else
-            {
-
-                string str = "";
-                for (int i = 1; i < args.Parameters.Count; i++)
-                {
-
-                    if (i != args.Parameters.Count - 1)
-                    {
-
-                        str += args.Parameters[i] + " ";
-
-                    }
-                    else
-                    {
-
-                        str += args.Parameters[i];
-
-                    }
-
-                }
-                List<TShockAPI.TSPlayer> playerList = TShockAPI.TShock.Utils.FindPlayer(str);
-                if (playerList.Count > 1)
-                {
-
-                    args.Player.SendMessage("Player does not exist.", Color.Red);
-
-                }
-                else if (playerList.Count < 1)
-                {
-
-                    args.Player.SendMessage(playerList.Count.ToString() + " players matched.", Color.Red);
-
-                }
-                else
-                {
-
-                    TShockAPI.TSPlayer thePlayer = playerList[0];
-                    int id = 0;
-                    bool isGroup = false;
-                    if (!int.TryParse(args.Parameters[0], out id))
-                    {
-                        var found = TShockAPI.TShock.Utils.GetBuffByName(args.Parameters[0]);
-                        List<int> found2 = GetGroupBuffByName(args.Parameters[0]);
-                        if (args.Parameters[0].ToLower() == "off")
-                        {
-
-                            if (buffsUsed[thePlayer.Index].Count() > 0)
-                            {
-
-                                buffsUsed[thePlayer.Index].Clear();
-                                args.Player.SendMessage("You have had all permabuffs removed from " + thePlayer.Name + ".");
-                                TShock.Players[thePlayer.Index].SendMessage("You have had all permabuffs removed.");
-
-                            }
-                            else
-                            {
-
-                                args.Player.SendMessage("You do not currently have any permabuffs applied (solely) to " + thePlayer.Name + ".");
-
-                            }
-                            return;
-
-                        }
-                        if (found.Count + found2.Count == 0)
-                        {
-                            args.Player.SendMessage("Invalid buff name!", Color.Red);
-                            return;
-                        }
-                        else if (found.Count + found2.Count > 1)
-                        {
-                            args.Player.SendMessage(string.Format("More than one ({0}) buff matched!", found.Count), Color.Red);
-                            return;
-                        }
-                        if (found.Count == 1)
-                        {
-
-                            id = found[0];
-
-                        }
-                        else if (found2.Count == 1)
-                        {
-
-                            id = found2[0];
-                            isGroup = true;
-
-                        }
-                        else
-                        {
-
-                            return;
-
-                        }
-                    }
-                    if (!isGroup)
-                    {
-                        if (id > 0 && id < Main.maxBuffs)
-                        {
-                            if (!buffsUsed[thePlayer.Index].Contains(id))
-                            {
-                                thePlayer.SetBuff(id, short.MaxValue);
-                                buffsUsed[thePlayer.Index].Add(id);
-                                args.Player.SendMessage(string.Format("You have permabuffed " + thePlayer.Name + " with {0}",
-                                    TShockAPI.TShock.Utils.GetBuffName(id)), Color.Green);
-                                thePlayer.SendMessage(string.Format("You have been permabuffed with {0}({1})!",
-                                 TShockAPI.TShock.Utils.GetBuffName(id), TShockAPI.TShock.Utils.GetBuffDescription(id)), Color.Green);
-                            }
-                            else
-                            {
-                                buffsUsed[thePlayer.Index].Remove(id);
-                                args.Player.SendMessage(string.Format("You have removed " + thePlayer.Name + "'s {0} permabuff.",
-                                    TShockAPI.TShock.Utils.GetBuffName(id)), Color.Green);
-                                thePlayer.SendMessage(string.Format("Your {0} permabuff has been removed.",
-                                    TShockAPI.TShock.Utils.GetBuffName(id)), Color.Green);
-
-                            }
-                        }
-                    }
-                    else
-                    {
-                        foreach (int id2 in buffGroups.Values.ToArray()[id])
-                        {
-                            thePlayer.SetBuff(id2, short.MaxValue);
-                            if (!buffsUsed[thePlayer.Index].Contains(id2))
-                                buffsUsed[thePlayer.Index].Add(id2);
-                            args.Player.SendMessage(string.Format("You have permabuffed " + thePlayer.Name + " with {0}",
-                                TShockAPI.TShock.Utils.GetBuffName(id2)), Color.Green);
-                            thePlayer.SendMessage(string.Format("You have been permabuffed with {0}({1})!",
-                             TShockAPI.TShock.Utils.GetBuffName(id2), TShockAPI.TShock.Utils.GetBuffDescription(id)), Color.Green);
-                        }
-                    }
-
-                }
-
-            }
-
-        }
-
-        public static void permaBuffAll(CommandArgs args)
-        {
-
-            if (args.Parameters.Count == 0)
-            {
-
-                args.Player.SendMessage("Improper Syntax! Proper Syntax: /permabuffall buff [player]", Color.Red);
-
-            }
-            else if (args.Parameters.Count == 1)
-            {
-
-                int id = 0;
-                bool isGroup = false;
-                if (!int.TryParse(args.Parameters[0], out id))
-                {
-                    var found = TShockAPI.TShock.Utils.GetBuffByName(args.Parameters[0]);
-                    List<int> found2 = GetGroupBuffByName(args.Parameters[0]);
-                    if (args.Parameters[0].ToLower() == "off")
-                    {
-
-                        if (allBuffsUsed.Count() > 0)
-                        {
-
-                            allBuffsUsed.Clear();
-                            TSPlayer.All.SendInfoMessage("All Global permabuffs have been deactivated.");
-
-                        }
-                        else
-                        {
-
-                            args.Player.SendMessage("There are currently no global permabuffs active.");
-
-                        }
-                        return;
-
-                    }
-                    if (found.Count + found2.Count == 0)
-                    {
-                        args.Player.SendMessage("Invalid buff name!", Color.Red);
-                        return;
-                    }
-                    else if (found.Count + found2.Count > 1)
-                    {
-                        args.Player.SendMessage(string.Format("More than one ({0}) buff matched!", found.Count), Color.Red);
-                        return;
-                    }
-                    if (found.Count == 1)
-                    {
-
-                        id = found[0];
-
-                    }
-                    else if (found2.Count == 1)
-                    {
-
-                        id = found2[0];
-                        isGroup = true;
-
-                    }
-                    else
-                    {
-
-                        return;
-
-                    }
-                }
-                if (!isGroup)
-                {
-                    if (id > 0 && id < Main.maxBuffs)
-                    {
-                        if (!allBuffsUsed.Contains(id))
-                        {
-                            TSPlayer.All.SetBuff(id, short.MaxValue);
-                            allBuffsUsed.Add(id);
-                            TSPlayer.All.SendInfoMessage(string.Format("Everyone has been permabuffed with {0}({1})!",
-                                TShockAPI.TShock.Utils.GetBuffName(id), TShockAPI.TShock.Utils.GetBuffDescription(id)), Color.Green);
-                        }
-                        else
-                        {
-                            allBuffsUsed.Remove(id);
-                            TSPlayer.All.SendInfoMessage(string.Format("Everyone has had the {0} permabuff removed.",
-                                TShockAPI.TShock.Utils.GetBuffName(id)), Color.Green);
-
-                        }
-                    }
-                }
-                else
-                {
-
-                    foreach (int id2 in buffGroups.Values.ToArray()[id])
-                    {
-                        TSPlayer.All.SetBuff(id2, short.MaxValue);
-                        if (!allBuffsUsed.Contains(id2))
-                            allBuffsUsed.Add(id2);
-                        TSPlayer.All.SendInfoMessage(string.Format("Everyone has been permabuffed with {0}({1})!",
-                            TShockAPI.TShock.Utils.GetBuffName(id2), TShockAPI.TShock.Utils.GetBuffDescription(id2)), Color.Green);
-                    }
-
-                }
-
-            }
-
-        }
-
-        public static void Mow(CommandArgs args)
-        {
-
-            if (args.Parameters.Count > 0)
-            {
-
-                string str = "";
-                for (int i = 0; i < args.Parameters.Count; i++)
-                {
-
-                    if (i != args.Parameters.Count - 1)
-                    {
-
-                        str += args.Parameters[i] + " ";
-
-                    }
-                    else
-                    {
-
-                        str += args.Parameters[i];
-
-                    }
-
-                }
-                TShockAPI.DB.Region theRegion = TShock.Regions.GetRegionByName(str);
-                if (theRegion != default(TShockAPI.DB.Region))
-                {
-                    try
-                    {
-                        int index = SearchTable(SQLEditor.ReadColumn("regionMow", "Name", new List<SqlValue>()), str);
-                        if (index == -1)
-                        {
-
-                            List<SqlValue> theList = new List<SqlValue>();
-                            theList.Add(new SqlValue("Name", "'" + str + "'"));
-                            theList.Add(new SqlValue("Mow", 1));
-                            SQLEditor.InsertValues("regionMow", theList);
-                            regionMow.Add(str, true);
-                            args.Player.SendMessage(str + " is now set to auto-mow.");
-
-                        }
-                        else if (Convert.ToBoolean(SQLEditor.ReadColumn("regionMow", "Mow", new List<SqlValue>())[index]))
-                        {
-
-                            List<SqlValue> theList = new List<SqlValue>();
-                            List<SqlValue> where = new List<SqlValue>();
-                            theList.Add(new SqlValue("Mow", 0));
-                            where.Add(new SqlValue("Name", "'" + str + "'"));
-                            SQLEditor.UpdateValues("regionMow", theList, where);
-                            regionMow.Remove(str);
-                            regionMow.Add(str, false);
-                            args.Player.SendMessage(str + " now has auto-mow turned off.");
-
-                        }
-                        else
-                        {
-
-                            List<SqlValue> theList = new List<SqlValue>();
-                            List<SqlValue> where = new List<SqlValue>();
-                            theList.Add(new SqlValue("Mow", 1));
-                            where.Add(new SqlValue("Name", "'" + str + "'"));
-                            SQLEditor.UpdateValues("regionMow", theList, where);
-                            regionMow.Remove(str);
-                            regionMow.Add(str, true);
-                            args.Player.SendMessage(str + " is now set to auto-mow.");
-
-                        }
-                    }
-                    catch (Exception) { args.Player.SendMessage("An error occurred when writing to the DataBase.", Color.Red); }
-
-                }
-                else
-                {
-
-                    args.Player.SendMessage("The specified region does not exist.");
-
-                }
-
-            }
-            else
-            {
-
-                args.Player.SendMessage("Improper Syntax.  Proper Syntax: /mow regionname", Color.Red);
-
-            }
-
-        }
-
+        #region AutoHeal
         public static void AutoHeal(CommandArgs args)
         {
             if (args.Parameters.Count == 0)
             {
-                isHeal[args.Player.Index] = !isHeal[args.Player.Index];
-                if (isHeal[args.Player.Index])
+                var player = Utils.GetPlayers(args.Player.Index);
+                player.isHeal = !player.isHeal;
+
+                if (player.isHeal)
                 {
-
                     args.Player.SendMessage("Auto Heal Mode is now on.");
-
                 }
                 else
                 {
-
                     args.Player.SendMessage("Auto Heal Mode is now off.");
-
                 }
             }
             else
             {
+                string str = args.Parameters[0];
 
-                string str = "";
-                for (int i = 0; i < args.Parameters.Count; i++)
+                var findPlayers = TShockAPI.TShock.Utils.FindPlayer(str);
+
+                if (findPlayers.Count > 1)
                 {
-
-                    if (i != args.Parameters.Count - 1)
-                    {
-
-                        str += args.Parameters[i] + " ";
-
-                    }
-                    else
-                    {
-
-                        str += args.Parameters[i];
-
-                    }
-
-                }
-                List<TShockAPI.TSPlayer> playerList = TShockAPI.TShock.Utils.FindPlayer(str);
-                if (playerList.Count > 1)
-                {
-
                     args.Player.SendMessage("Player does not exist.", Color.Red);
-
                 }
-                else if (playerList.Count < 1)
+
+                else if (findPlayers.Count < 1)
                 {
-
-                    args.Player.SendMessage(playerList.Count.ToString() + " players matched.", Color.Red);
-
+                    args.Player.SendMessage(findPlayers.Count + " players matched.", Color.Red);
                 }
+
                 else
                 {
+                    var player = Utils.GetPlayers(args.Parameters[0]);
+                    TShockAPI.TSPlayer ply = findPlayers[0];
 
-                    TShockAPI.TSPlayer thePlayer = playerList[0];
-                    isHeal[thePlayer.Index] = !isHeal[thePlayer.Index];
-                    if (isHeal[thePlayer.Index])
+                    player.isHeal = !player.isHeal;
+
+                    if (player.isHeal)
                     {
-
-                        args.Player.SendMessage("You have activated auto-heal for " + thePlayer.Name + ".");
-                        thePlayer.SendMessage("You have been given regenerative powers!");
-
+                        args.Player.SendMessage("You have activated auto-heal for " + ply.Name + ".");
+                        ply.SendInfoMessage(args.Player.Name + " has activated auto-heal on you");
                     }
+
                     else
                     {
-
-                        args.Player.SendMessage("You have deactivated auto-heal for " + thePlayer.Name + ".");
-                        thePlayer.SendMessage("You now have the healing powers of an average human.");
-
+                        args.Player.SendInfoMessage("You have deactivated auto-heal for " + ply.Name + ".");
+                        ply.SendInfoMessage(args.Player.Name + " has deactivated auto-heal on you");
                     }
-
                 }
-
             }
-
         }
+        #endregion
 
+        #region Ghost
         public static void Ghost(CommandArgs args)
         {
-
             if (args.Parameters.Count == 0)
             {
                 int tempTeam = args.Player.TPlayer.team;
                 args.Player.TPlayer.team = 0;
                 NetMessage.SendData(45, -1, -1, "", args.Player.Index);
                 args.Player.TPlayer.team = tempTeam;
-                if (!isGhost[args.Player.Index])
+
+                var player = Utils.GetPlayers(args.Player.Index);
+
+                if (!player.isGhost)
                 {
-
-                    args.Player.SendMessage("Ghost Mode activated!");
+                    args.Player.SendSuccessMessage("Ghost Mode activated!");
                     TSPlayer.All.SendInfoMessage(args.Player.Name + " left", Color.Yellow);
-
                 }
+
                 else
                 {
-
-                    args.Player.SendMessage("Ghost Mode deactivated!");
+                    args.Player.SendSuccessMessage("Ghost Mode deactivated!");
                     TSPlayer.All.SendInfoMessage(args.Player.Name + " has joined.", Color.Yellow);
-
                 }
-                isGhost[args.Player.Index] = !isGhost[args.Player.Index];
+
+                player.isGhost = !player.isGhost;
                 args.Player.TPlayer.position.X = 0;
                 args.Player.TPlayer.position.Y = 0;
-                cansend = true;
+                MAC.cansend = true;
                 NetMessage.SendData(13, -1, -1, "", args.Player.Index);
-                cansend = false;
+                MAC.cansend = false;
             }
             else
             {
-
                 string str = "";
                 for (int i = 0; i < args.Parameters.Count; i++)
                 {
-
                     if (i != args.Parameters.Count - 1)
                     {
-
                         str += args.Parameters[i] + " ";
-
                     }
                     else
                     {
-
                         str += args.Parameters[i];
-
                     }
-
                 }
-                List<TShockAPI.TSPlayer> playerList = TShockAPI.TShock.Utils.FindPlayer(str);
+
+                var playerList = TShockAPI.TShock.Utils.FindPlayer(str);
+
                 if (playerList.Count > 1)
                 {
-
-                    args.Player.SendMessage("Player does not exist.", Color.Red);
-
+                    args.Player.SendErrorMessage("Player does not exist.");
                 }
+
                 else if (playerList.Count < 1)
                 {
-
-                    args.Player.SendMessage(playerList.Count.ToString() + " players matched.", Color.Red);
-
+                    args.Player.SendErrorMessage(playerList.Count.ToString() + " players matched.");
                 }
+
                 else
                 {
+                    TShockAPI.TSPlayer Player = playerList[0];
+                    int tempTeam = Player.TPlayer.team;
+                    Player.TPlayer.team = 0;
+                    NetMessage.SendData(45, -1, -1, "", Player.Index);
+                    Player.TPlayer.team = tempTeam;
+                    var Mplayer = Utils.GetPlayers(Player.Index);
 
-                    TShockAPI.TSPlayer thePlayer = playerList[0];
-                    int tempTeam = thePlayer.TPlayer.team;
-                    thePlayer.TPlayer.team = 0;
-                    NetMessage.SendData(45, -1, -1, "", thePlayer.Index);
-                    thePlayer.TPlayer.team = tempTeam;
-                    if (!isGhost[thePlayer.Index])
+                    if (!Mplayer.isGhost)
                     {
-
-                        args.Player.SendMessage("Ghost Mode activated for " + thePlayer.Name + ".");
-                        thePlayer.SendMessage("You have become a stealthy ninja!");
-
+                        args.Player.SendSuccessMessage("Ghost mode activated for " + Player.Name + ".");
+                        Player.SendInfoMessage(Player.Name + " has activated ghost mode for you");
                     }
                     else
                     {
-
-                        args.Player.SendMessage("Ghost Mode deactivated for " + thePlayer.Name + ".");
-                        thePlayer.SendMessage("You no longer have the stealth of a ninja.");
-
+                        args.Player.SendSuccessMessage("Ghost Mode deactivated for " + Player.Name + ".");
+                        Player.SendInfoMessage(Player.Name + " has deactivated ghost mode for you");
                     }
-                    isGhost[thePlayer.Index] = !isGhost[thePlayer.Index];
-                    thePlayer.TPlayer.position.X = 0;
-                    thePlayer.TPlayer.position.Y = 0;
-                    cansend = true;
-                    NetMessage.SendData(13, -1, -1, "", thePlayer.Index);
-                    cansend = false;
 
+                    Mplayer.isGhost = !Mplayer.isGhost;
+                    Player.TPlayer.position.X = 0;
+                    Player.TPlayer.position.Y = 0;
+                    MAC.cansend = true;
+                    NetMessage.SendData(13, -1, -1, "", Player.Index);
+                    MAC.cansend = false;
                 }
-
             }
-
         }
+        #endregion
 
-        public static void SpawnGroup(CommandArgs args)
-        {
-            if (args.Parameters.Count > 0)
-            {
-                try
-                {
-                    Dictionary<NPC, int> groupSpawn = MAC.GetSpawnBuffByName(args.Parameters[0]);
-                    if (groupSpawn.Count < 1)
-                    {
-                        args.Player.SendMessage("Invalid Spawn Group name.", Color.Red);
-                    }
-                    else
-                    {
-                        if (args.Parameters.Count > 1)
-                        {
-                            try
-                            {
-                                double multiplier = Convert.ToDouble(args.Parameters[1]);
-                                foreach (KeyValuePair<NPC, int> entry in groupSpawn)
-                                {
-                                    int amount = (int)(entry.Value * multiplier);
-                                    if (amount > 1000)
-                                    {
-                                        amount = 1000;
-                                    }
-                                    TSPlayer.Server.SpawnNPC(entry.Key.type, entry.Key.name, amount, args.Player.TileX, args.Player.TileY, 50, 20);
-                                    TSPlayer.All.SendInfoMessage(entry.Key.name + " was spawned " + amount.ToString() + " times.");
+        //Repair Spawn Group
 
-                                }
-
-                            }
-                            catch (Exception) { args.Player.SendMessage("Invalid Syntax.  Proper Syntax: /spawngroup spawngroupname [multiplier]", Color.Red); }
-
-                        }
-                        else
-                        {
-
-                            foreach (KeyValuePair<NPC, int> entry in groupSpawn)
-                            {
-
-                                TSPlayer.Server.SpawnNPC(entry.Key.type, entry.Key.name, entry.Value, args.Player.TileX, args.Player.TileY, 50, 20);
-                                TSPlayer.All.SendInfoMessage(entry.Key.name + " was spawned " + entry.Value.ToString() + " times.");
-
-                            }
-
-                        }
-
-                    }
-
-                }
-                catch (Exception) { args.Player.SendMessage("Invalid spawn group name.", Color.Red); }
-
-            }
-            else
-            {
-
-                args.Player.SendMessage("Invalid Syntax.  Proper Syntax: /spawngroup spawngroupname [multiplier]");
-
-            }
-
-        }
-
-        public static void SpawnAll(CommandArgs args)
-        {
-
-            int amount = 1;
-            if (args.Parameters.Count > 0)
-            {
-
-                try
-                {
-
-                    amount = Convert.ToInt32(args.Parameters[0]);
-
-                }
-                catch (Exception) { args.Player.SendMessage("Improper Syntax.  Proper Syntax: /spawnall [amount]", Color.Red); return; }
-
-            }
-            for (int i = 0; i < Main.maxNPCTypes; i++)
-            {
-
-                var npc = TShockAPI.TShock.Utils.GetNPCById(i);
-                if (!npc.name.ToLower().StartsWith("dungeon guar"))
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, args.Player.TileX, args.Player.TileY, 50, 20);
-
-            }
-            if (amount > 1000 / Main.maxNPCTypes)
-            {
-
-                amount = 1000 / Main.maxNPCTypes;
-
-            }
-            TSPlayer.All.SendInfoMessage(args.Player.Name + " has spawned every npc " + amount.ToString() + " times!");
-
-        }
-
-        public static void ReloadMore(CommandArgs args)
-        {
-
-            reload();
-            args.Player.SendMessage("More Admin Commands Config file successfully reloaded.");
-
-        }
-
-        public static void permaBuffGroup(CommandArgs args)
-        {
-
-            if (args.Parameters.Count() > 1)
-            {
-
-                string str = args.Parameters[0].ToLower();
-                if (TShock.Groups.GroupExists(str))
-                {
-
-                    List<int> buffs = TShockAPI.TShock.Utils.GetBuffByName(args.Parameters[1]);
-                    List<int> buffs2 = GetGroupBuffByName(args.Parameters[1]);
-                    bool isGroup = false;
-                    if (args.Parameters[1].ToLower() == "off")
-                    {
-
-                        if (!buffsUsedGroup.ContainsKey(str))
-                        {
-
-                            args.Player.SendMessage("There are no permabuffs currently applied to this group.", Color.Red);
-
-                        }
-                        else
-                        {
-                            try
-                            {
-
-                                buffsUsedGroup[str].Clear();
-
-                            }
-                            catch (Exception) { }
-                            args.Player.SendMessage("The " + str + " group has had all buffs removed.");
-                        }
-                        return;
-
-                    }
-                    if (buffs.Count + buffs2.Count < 1)
-                    {
-
-                        args.Player.SendMessage("No buffs by that name can be found.", Color.Red);
-
-                    }
-                    else if (buffs.Count + buffs2.Count > 1)
-                    {
-
-                        args.Player.SendMessage("More than one buff matched.", Color.Red);
-
-                    }
-                    else
-                    {
-
-                        if (buffs2.Count == 1)
-                        {
-
-                            isGroup = true;
-
-                        }
-                        if (!buffsUsedGroup.ContainsKey(str))
-                        {
-
-                            if (!isGroup)
-                            {
-                                List<int> tempList = new List<int>();
-                                tempList.Add(buffs[0]);
-                                buffsUsedGroup.Add(str, tempList);
-                                args.Player.SendMessage("The " + str + " group has had the " + TShockAPI.TShock.Utils.GetBuffName(buffs[0]) + " permabuff added.");
-                            }
-                            else
-                            {
-
-                                foreach (int id in buffGroups.Values.ToArray()[buffs2[0]])
-                                {
-                                    List<int> tempList = new List<int>();
-                                    tempList.Add(id);
-                                    List<int> tempList2 = new List<int>();
-                                    if (!buffsUsedGroup.Keys.ToArray().Contains(str))
-                                    {
-                                        buffsUsedGroup.Add(str, tempList);
-                                    }
-                                    else
-                                    {
-                                        buffsUsedGroup.TryGetValue(str, out tempList2);
-                                        buffsUsedGroup.Remove(str);
-                                        tempList2.Add(id);
-                                        buffsUsedGroup.Add(str, tempList2);
-
-                                    }
-                                    args.Player.SendMessage("The " + str + " group has had the " + TShockAPI.TShock.Utils.GetBuffName(id) + " permabuff added.");
-                                }
-
-                            }
-
-                        }
-                        else
-                        {
-
-                            try
-                            {
-                                List<int> tempChangeList;
-                                buffsUsedGroup.TryGetValue(str, out tempChangeList);
-                                if (!isGroup)
-                                {
-                                    if (!tempChangeList.Contains(buffs[0]))
-                                    {
-
-                                        tempChangeList.Add(buffs[0]);
-                                        args.Player.SendMessage("The " + str + " group has had the " + TShockAPI.TShock.Utils.GetBuffName(buffs[0]) + " permabuff added.");
-
-                                    }
-                                    else
-                                    {
-
-                                        tempChangeList.Remove(buffs[0]);
-                                        args.Player.SendMessage("The " + str + " group has had the " + TShockAPI.TShock.Utils.GetBuffName(buffs[0]) + " permabuff removed.");
-
-                                    }
-                                }
-                                else
-                                {
-
-                                    foreach (int id in buffGroups.Values.ToArray()[buffs2[0]])
-                                    {
-
-                                        if (!tempChangeList.Contains(id))
-                                        {
-
-                                            tempChangeList.Add(id);
-                                            args.Player.SendMessage("The " + str + " group has had the " + TShockAPI.TShock.Utils.GetBuffName(id) + " permabuff added.");
-
-                                        }
-                                        else
-                                        {
-
-                                            tempChangeList.Remove(id);
-                                            args.Player.SendMessage("The " + str + " group has had the " + TShockAPI.TShock.Utils.GetBuffName(id) + " permabuff removed.");
-
-                                        }
-
-                                    }
-
-                                }
-                                buffsUsedGroup.Remove(str);
-                                buffsUsedGroup.Add(str, tempChangeList);
-
-                            }
-                            catch (Exception) { args.Player.SendMessage("There was an error with the command, please report this to the plugin developer.", Color.Red); }
-
-                        }
-
-                    }
-
-                }
-                else
-                {
-
-                    args.Player.SendMessage("The specified group does not exist.", Color.Red);
-
-                }
-
-            }
-            else
-            {
-
-                args.Player.SendMessage("Improper Syntax. Proper Syntax: /permabuffgroup groupname buffname", Color.Red);
-
-            }
-
-        }
-
+        #region MuteAll
         public static void MuteAll(CommandArgs args)
         {
 
@@ -1327,35 +596,35 @@ namespace MoreAdminCommands
 
                 }
                 TSPlayer.All.SendInfoMessage(args.Player.Name + " has muted everyone.");
-                args.Player.SendMessage("You have muted everyone without the mute permission.  They will remain muted until you use /muteall again.");
+                args.Player.SendSuccessMessage("You have muted everyone without the mute permission. " + 
+                    "They will remain muted until you use /muteall again.");
             }
             else
             {
-                for (int i = 0; i < 256; i++)
+                foreach (Mplayer player in MAC.Players)
                 {
-
-                    MAC.muteAllFree[i] = false;
-
+                    player.muted = false;
                 }
                 TSPlayer.All.SendInfoMessage(args.Player.Name + " has unmuted everyone, except perhaps those muted before everyone was muted.");
             }
-
-
         }
+        #endregion
 
+        #region SpawnByMe
         public static void SpawnByMe(CommandArgs args)
         {
-
             if (args.Parameters.Count < 1 || args.Parameters.Count > 2)
             {
                 args.Player.SendMessage("Invalid syntax! Proper syntax: /spawnbyme <mob name/id> [amount]", Color.Red);
                 return;
             }
+
             if (args.Parameters[0].Length == 0)
             {
                 args.Player.SendMessage("Missing mob name/id", Color.Red);
                 return;
             }
+
             int amount = 1;
             if (args.Parameters.Count >= 2 && !int.TryParse(args.Parameters[1], out amount))
             {
@@ -1366,14 +635,17 @@ namespace MoreAdminCommands
             amount = Math.Min(amount, Main.maxNPCs);
 
             var npcs = TShockAPI.TShock.Utils.GetNPCByIdOrName(args.Parameters[0]);
+
             if (npcs.Count == 0)
             {
                 args.Player.SendMessage("Invalid mob type!", Color.Red);
             }
+
             else if (npcs.Count > 1)
             {
                 args.Player.SendMessage(string.Format("More than one ({0}) mob matched!", npcs.Count), Color.Red);
             }
+
             else
             {
                 var npc = npcs[0];
@@ -1385,9 +657,10 @@ namespace MoreAdminCommands
                 else
                     args.Player.SendMessage("Invalid mob type!", Color.Red);
             }
-
         }
+        #endregion
 
+        #region ButcherNear
         public static void ButcherNear(CommandArgs args)
         {
 
@@ -1400,7 +673,7 @@ namespace MoreAdminCommands
                     nearby = Convert.ToInt32(args.Parameters[0]);
 
                 }
-                catch (Exception) { args.Player.SendMessage("Improper Syntax. Proper Syntax: /butchernear [distance]"); return; }
+                catch { args.Player.SendErrorMessage("Improper Syntax. Proper Syntax: /butchernear [distance]"); return; }
             }
             int killcount = 0;
             for (int i = 0; i < Main.npc.Length; i++)
@@ -1415,26 +688,27 @@ namespace MoreAdminCommands
             TSPlayer.All.SendInfoMessage(string.Format("Killed {0} NPCs within a radius of " + nearby.ToString() + " blocks.", killcount));
 
         }
+        #endregion
 
+        #region ButcherAll
         public static void ButcherAll(CommandArgs args)
         {
-
             int killcount = 0;
-            for (int i = 0; i < Main.npc.Length; i++)
+            for (int i = 0; i < Main.maxNPCs; i++)
             {
                 if (Main.npc[i].active)
                 {
-                    TSPlayer.Server.StrikeNPC(i, 99999, 90f, 1);
+                    TSPlayer.Server.StrikeNPC(i, Main.npc[i].lifeMax + 1, 90f, 1);
                     killcount++;
                 }
             }
             TSPlayer.All.SendInfoMessage(string.Format("Killed {0} NPCs.", killcount));
-
         }
+        #endregion
 
+        #region ButcherFriendly
         public static void ButcherFriendly(CommandArgs args)
         {
-
             int killcount = 0;
             for (int i = 0; i < Main.npc.Length; i++)
             {
@@ -1445,9 +719,10 @@ namespace MoreAdminCommands
                 }
             }
             TSPlayer.All.SendInfoMessage(string.Format("Killed {0} friendly NPCs.", killcount));
-
         }
+        #endregion
 
+        #region ButcherNPC
         public static void ButcherNPC(CommandArgs args)
         {
 
@@ -1456,26 +731,33 @@ namespace MoreAdminCommands
                 args.Player.SendMessage("Invalid syntax! Proper syntax: /butchernpc <npc name/id>", Color.Red);
                 return;
             }
+
             if (args.Parameters[0].Length == 0)
             {
                 args.Player.SendMessage("Missing npc name/id", Color.Red);
                 return;
             }
+
             var npcs = TShockAPI.TShock.Utils.GetNPCByIdOrName(args.Parameters[0]);
+
             if (npcs.Count == 0)
             {
                 args.Player.SendMessage("Invalid npc type!", Color.Red);
             }
+
             else if (npcs.Count > 1)
             {
                 args.Player.SendMessage(string.Format("More than one ({0}) npc matched!", npcs.Count), Color.Red);
             }
+
             else
             {
                 var npc = npcs[0];
+
                 if (npc.type >= 1 && npc.type < Main.maxNPCTypes)
                 {
                     int killcount = 0;
+
                     for (int i = 0; i < Main.npc.Length; i++)
                     {
                         if (Main.npc[i].active && Main.npc[i].type == npc.type)
@@ -1484,90 +766,90 @@ namespace MoreAdminCommands
                             killcount++;
                         }
                     }
+
                     TSPlayer.All.SendInfoMessage(string.Format("Killed {0} " + npc.name + "(s).", killcount));
                 }
+
                 else
                     args.Player.SendMessage("Invalid npc type!", Color.Red);
             }
-
         }
+        #endregion
 
+        #region Permamute
         public static void PermaMute(CommandArgs args)
         {
-
             if (args.Parameters.Count() > 0)
             {
-
-                List<TSPlayer> tply = TShockAPI.TShock.Utils.FindPlayer(args.Parameters[0]);
+                var tply = TShockAPI.TShock.Utils.FindPlayer(args.Parameters[0]);
                 var readTableName = MAC.SQLEditor.ReadColumn("muteList", "Name", new List<SqlValue>());
                 var readTableIP = MAC.SQLEditor.ReadColumn("muteList", "IP", new List<SqlValue>());
+
                 if (tply.Count() > 1)
                 {
-
                     args.Player.SendMessage("More than 1 player matched.", Color.Red);
-
                 }
+
                 else if (tply.Count() < 1)
                 {
-
                     if (readTableName.Contains(args.Parameters[0].ToLower()))
                     {
-
-                        List<SqlValue> theList = new List<SqlValue>();
+                        List<SqlValue> List = new List<SqlValue>();
                         List<SqlValue> where = new List<SqlValue>();
                         where.Add(new SqlValue("Name", "'" + args.Parameters[0].ToLower() + "'"));
                         MAC.SQLWriter.DeleteRow("muteList", where);
-                        args.Player.SendMessage(args.Parameters[0] + " has been successfully been removed from the perma-mute list.");
-
+                        args.Player.SendInfoMessage(args.Parameters[0] + 
+                            " has been successfully been removed from the perma-mute list.");
                     }
                     else
                     {
-
-                        args.Player.SendMessage("No players found under that name on the server or in the perma-mute list.", Color.Red);
-
+                        args.Player.SendErrorMessage("No players found under that name on the server or in the perma-mute list.");
                     }
-
                 }
+
                 else
                 {
-
-                    MAC.muteTime[tply[0].Index] = -1;
+                    var player = Utils.GetPlayers(tply[0].Index);
+                    player.muteTime = -1;
                     string str = tply[0].Name.ToLower();
                     int index = MAC.SearchTable(MAC.SQLEditor.ReadColumn("muteList", "Name", new List<SqlValue>()), str);
+
                     if (index == -1)
                     {
-
                         List<SqlValue> theList = new List<SqlValue>();
                         theList.Add(new SqlValue("Name", "'" + str + "'"));
                         theList.Add(new SqlValue("IP", "'" + tply[0].IP + "'"));
                         MAC.SQLEditor.InsertValues("muteList", theList);
-                        MAC.muted[tply[0].Index] = true;
-                        args.Player.SendMessage(tply[0].Name + " has been permamuted by his/her IP Address.");
-                        tply[0].SendMessage("You have been muted by an admin.", Color.Red);
-
+                        player.muted = true;
+                        args.Player.SendInfoMessage(tply[0].Name + " has been permamuted by his/her IP Address.");
+                        tply[0].SendErrorMessage("You have been muted by an admin.");
                     }
+
                     else
                     {
-
                         List<SqlValue> where = new List<SqlValue>();
                         where.Add(new SqlValue("IP", "'" + tply[0].IP + "'"));
                         MAC.SQLWriter.DeleteRow("muteList", where);
-                        MAC.muted[tply[0].Index] = false;
-                        args.Player.SendMessage(tply[0].Name + " has been taken off the perma-mute list, and is now un-muted.");
-                        tply[0].SendMessage("You have been unmuted.");
-
+                        player.muted = false;
+                        args.Player.SendInfoMessage(tply[0].Name + " has been taken off the perma-mute list, and is now un-muted.");
+                        tply[0].SendInfoMessage("You have been unmuted.");
                     }
-
                 }
-
             }
+
             else
             {
-
-                args.Player.SendMessage("Improper Syntax.  Proper Syntax: /permamute player", Color.Red);
-
+                args.Player.SendErrorMessage("Improper Syntax.  Proper Syntax: /permamute player");
             }
-
         }
+        #endregion
+
+        #region Reload
+        public static void ReloadMore(CommandArgs args)
+        {
+            MAC.SetUpConfig();
+            args.Player.SendInfoMessage("Reloaded MoreAdminCommands config file");
+        }
+        #endregion
     }
 }

@@ -38,10 +38,6 @@ namespace MoreAdminCommands
         public static bool freezeDayTime = true;
         public static bool muteAll = false;
 
-        public static Dictionary<string, List<int>> buffGroups = new Dictionary<string, List<int>>();
-        public static Dictionary<string, Dictionary<NPC, int>> spawnGroups = new Dictionary<string, Dictionary<NPC, int>>();
-
-
         public override string Name
         {
             get { return "MoreAdminCommands"; }
@@ -101,52 +97,9 @@ namespace MoreAdminCommands
             Order = -1;
         }
 
+        #region OnInitialize
         public void OnInitialize(EventArgs args)
         {
-            //Not sure if necessary
-            #region NameBuffs
-            Main.buffName[1] = "Obsidian Skin";
-            Main.buffName[2] = "Regeneration";
-            Main.buffName[3] = "Swiftness";
-            Main.buffName[4] = "Gills";
-            Main.buffName[5] = "Ironskin";
-            Main.buffName[6] = "Mana Regeneration";
-            Main.buffName[7] = "Magic Power";
-            Main.buffName[8] = "Featherfall";
-            Main.buffName[9] = "Spelunker";
-            Main.buffName[10] = "Invisibility";
-            Main.buffName[11] = "Shine";
-            Main.buffName[12] = "Night Owl";
-            Main.buffName[13] = "Battle";
-            Main.buffName[14] = "Thorns";
-            Main.buffName[15] = "Water Walking";
-            Main.buffName[0x10] = "Archery";
-            Main.buffName[0x11] = "Hunter";
-            Main.buffName[0x12] = "Gravitation";
-            Main.buffName[0x13] = "Orb of Light";
-            Main.buffName[20] = "Poisoned";
-            Main.buffName[0x15] = "Potion Sickness";
-            Main.buffName[0x16] = "Darkness";
-            Main.buffName[0x17] = "Cursed";
-            Main.buffName[0x18] = "On Fire!";
-            Main.buffName[0x19] = "Tipsy";
-            Main.buffName[0x1a] = "Well Fed";
-            Main.buffName[0x1b] = "Fairy";
-            Main.buffName[0x1c] = "Werewolf";
-            Main.buffName[0x1d] = "Clairvoyance";
-            Main.buffName[0x1e] = "Bleeding";
-            Main.buffName[0x1f] = "Confused";
-            Main.buffName[0x20] = "Slow";
-            Main.buffName[0x21] = "Weak";
-            Main.buffName[0x22] = "Merfolk";
-            Main.buffName[0x23] = "Silenced";
-            Main.buffName[0x24] = "Broken Armor";
-            Main.buffName[0x25] = "Horrified";
-            Main.buffName[0x26] = "The Tongue";
-            Main.buffName[0x27] = "Cursed Inferno";
-            Main.buffName[0x28] = "Bunny";
-            #endregion
-
             SQLEditor = new SqlTableEditor(TShock.DB, TShock.DB.GetSqlType() == SqlType.Sqlite ? (IQueryBuilder)new SqliteQueryCreator() : new MysqlQueryCreator());
             SQLWriter = new SqlTableCreator(TShock.DB, TShock.DB.GetSqlType() == SqlType.Sqlite ? (IQueryBuilder)new SqliteQueryCreator() : new MysqlQueryCreator());
             var table = new SqlTable("muteList",
@@ -160,7 +113,7 @@ namespace MoreAdminCommands
             Commands.ChatCommands.Add(new Command("mac.mute", Cmds.PermaMute, "permamute"));
             Commands.ChatCommands.Add(new Command("mac.mute", Cmds.MuteAll, "muteall"));
             Commands.ChatCommands.Add(new Command("mac.spawn", Cmds.SpawnMobPlayer, "spawnmobplayer", "smp"));
-            Commands.ChatCommands.Add(new Command("mac.spawn", Cmds.SpawnGroup, "spawngroup", "sg"));
+            //Commands.ChatCommands.Add(new Command("mac.spawn", Cmds.SpawnGroup, "spawngroup", "sg"));
             Commands.ChatCommands.Add(new Command("mac.spawn", Cmds.SpawnByMe, "spawnbyme", "sbm"));
             Commands.ChatCommands.Add(new Command("mac.search", Cmds.FindPerms, "findperm"));
             Commands.ChatCommands.Add(new Command("mac.search", Cmds.FindCommand, "findcommand", "findcmd"));
@@ -178,6 +131,30 @@ namespace MoreAdminCommands
             Commands.ChatCommands.Add(new Command(Cmds.TeamUnlock, "teamunlock"));
             #endregion
         }
+        #endregion
+
+        #region SetUpConfig
+        public static void SetUpConfig()
+        {
+            try
+            {
+                if (!File.Exists(savePath))
+                {
+                    config.Write(savePath);
+                }
+                else
+                {
+                    config = MACconfig.Read(savePath);
+                }
+            }
+            catch
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Invalid value in MoreAdminCommands.json");
+                Console.ResetColor();
+            }
+        }
+        #endregion
 
         #region OnJoin
         public void OnJoin(JoinEventArgs args)
@@ -220,7 +197,6 @@ namespace MoreAdminCommands
             player.accessGreen = false;
             player.accessYellow = false;
             player.autoKill = false;
-            player.tpOff = false;
         }
         #endregion
 
@@ -450,7 +426,6 @@ namespace MoreAdminCommands
         #region OnUpdate
         private void OnUpdate(EventArgs args)
         {
-
             if ((DateTime.UtcNow - LastCheck).TotalSeconds >= 1)
             {
                 LastCheck = DateTime.UtcNow;
@@ -486,19 +461,16 @@ namespace MoreAdminCommands
                             {
                                 int prevTeam = Main.player[tply.Index].team;
                                 Main.player[tply.Index].team = viewAllTeam;
-                                NetMessage.SendData((int)PacketTypes.PlayerTeam, i, -1, "", tply.Index);
+                                NetMessage.SendData((int)PacketTypes.PlayerTeam, player.Index, -1, "", tply.Index);
                                 Main.player[tply.Index].team = prevTeam;
 
                             }
                             catch (Exception) { }
-
                         }
-
                     }
 
                     if (player.muted)
                     {
-
                         if (player.muteTime > 0)
                         {
                             player.muteTime -= 1;
@@ -711,6 +683,24 @@ namespace MoreAdminCommands
         private static bool IsWhiteSpace(char c)
         {
             return c == ' ' || c == '\t' || c == '\n';
+        }
+        #endregion
+
+        #region SearchTable
+        public static int SearchTable(List<object> Table, string Query)
+        {
+            for (int i = 0; i < Table.Count; i++)
+            {
+                try
+                {
+                    if (Query == Table[i].ToString())
+                    {
+                        return (i);
+                    }
+                }
+                catch { }
+            }
+            return (-1);
         }
         #endregion
     }
