@@ -520,6 +520,7 @@ namespace MoreAdminCommands
         #region OnChat
         public void OnChat(ServerChatEventArgs args)
         {
+            var Mplayer = Utils.GetPlayers(args.Who);
             if (findIfPlayingCommand(args.Text) && !TShock.Players[args.Who].Group.HasPermission("ghostmode"))
             {
                 string sb = "";
@@ -539,7 +540,7 @@ namespace MoreAdminCommands
                 args.Handled = true;
             }
 
-            if (((muted[args.Who]) && (findIfMeCommand(args.Text))) || ((muteAll) && (!TShock.Players[args.Who].Group.HasPermission("mute"))))
+            if (((Mplayer.muted) && (findIfMeCommand(args.Text))) || ((muteAll) && (!TShock.Players[args.Who].Group.HasPermission("mute"))))
             {
                 TShock.Players[args.Who].SendMessage("You cannot use the /me command, you are muted.", Color.Red);
                 args.Handled = true;
@@ -553,37 +554,29 @@ namespace MoreAdminCommands
                 parseParameters(tempText);
             }
 
-            if ((muted[args.Who] || muteAll) && !TShock.Players[args.Who].Group.HasPermission("mute"))
+            if ((Mplayer.muted || muteAll) && !TShock.Players[args.Who].Group.HasPermission("mute"))
             {
                 var tsplr = TShock.Players[args.Who];
                 if (args.Text.StartsWith("/"))
                 {
-                    try
-                    {
-                        Commands.HandleCommand(tsplr, args.Text);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.ConsoleError("Command exception");
-                        Log.Error(ex.ToString());
-                    }
+                    Commands.HandleCommand(tsplr, args.Text);
                 }
                 else
                 {
                     if (!muteAll)
                     {
-                        if (muteTime[tsplr.Index] <= 0)
+                        if (Mplayer.muteTime <= 0)
                         {
                             tsplr.SendMessage("You have been muted by an admin.", Color.Red);
                         }
                         else
                         {
-                            tsplr.SendMessage("You have " + muteTime[tsplr.Index].ToString() + " seconds left of muting.", Color.Red);
+                            tsplr.SendMessage("You have " + Mplayer.muteTime + " seconds left of muting.", Color.Red);
                         }
                     }
                     else
                     {
-                        tsplr.SendMessage("The server is now muted for this reason: " + muteAllReason, Color.Red);
+                        tsplr.SendMessage("The server is now muted for this reason: " + config.muteAllReason, Color.Red);
                     }
                 }
                 args.Handled = true;
@@ -591,6 +584,7 @@ namespace MoreAdminCommands
         }
         #endregion
 
+        #region Stuff
         public static int distance(Vector2 point1, Point point2)
         {
             return (Convert.ToInt32(Math.Sqrt(Math.Pow(point1.X - point2.X, 2) + Math.Pow(point1.Y - point2.Y, 2))));
@@ -718,5 +712,6 @@ namespace MoreAdminCommands
         {
             return c == ' ' || c == '\t' || c == '\n';
         }
+        #endregion
     }
 }

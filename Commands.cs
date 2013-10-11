@@ -258,6 +258,7 @@ namespace MoreAdminCommands
         }
         #endregion
 
+        #region SpawnMobPlayer
         public static void SpawnMobPlayer(CommandArgs args)
         {
             if (args.Parameters.Count < 1 || args.Parameters.Count > 3)
@@ -309,14 +310,16 @@ namespace MoreAdminCommands
                     args.Player.SendMessage("Invalid mob type!", Color.Red);
             }
         }
+        #endregion
 
+        #region FreezeTime
         public void FreezeTime(CommandArgs args)
         {
-            timeFrozen = !timeFrozen;
-            freezeDayTime = Main.dayTime;
-            timeToFreezeAt = Main.time;
+            MAC.timeFrozen = !MAC.timeFrozen;
+            MAC.freezeDayTime = Main.dayTime;
+            MAC.timeToFreezeAt = Main.time;
 
-            if (timeFrozen)
+            if (MAC.timeFrozen)
             {
                 TSPlayer.All.SendInfoMessage(args.Player.Name.ToString() + " froze time.");
             }
@@ -325,24 +328,27 @@ namespace MoreAdminCommands
                 TSPlayer.All.SendInfoMessage(args.Player.Name.ToString() + " unfroze time.");
             }
         }
+        #endregion
 
+        #region KillAll
         private static void KillAll(CommandArgs args)
         {
             foreach (TSPlayer plr in TShock.Players)
             {
-                try
+                if (plr != null)
                 {
                     if (plr != args.Player)
                     {
                         plr.DamagePlayer(999999);
-                        plr.SendMessage(string.Format("{0} just killed you! (along with everyone else)", args.Player.Name));
                     }
                 }
-                catch (Exception) { }
             }
-            args.Player.SendMessage(string.Format("You just killed everyone!"));
+            TSPlayer.All.SendInfoMessage(args.Player.Name + " killed everyone!");
+            args.Player.SendSuccessMessage("You killed everyone!");
         }
+        #endregion
 
+        #region ForceGive
         private static void ForceGive(CommandArgs args)
         {
             if (args.Parameters.Count < 2)
@@ -413,15 +419,13 @@ namespace MoreAdminCommands
                 }
             }
         }
+        #endregion
 
         public static void permaBuff(CommandArgs args)
         {
-
             if (args.Parameters.Count == 0)
             {
-
-                args.Player.SendMessage("Improper Syntax! Proper Syntax: /permabuff buff [player]", Color.Red);
-
+                args.Player.SendErrorMessage("Improper Syntax! Proper Syntax: /permabuff buff [player]");
             }
             else if (args.Parameters.Count == 1)
             {
