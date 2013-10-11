@@ -847,7 +847,7 @@ namespace MoreAdminCommands
         #region Reload
         public static void ReloadMore(CommandArgs args)
         {
-            MAC.SetUpConfig();
+            Utils.SetUpConfig();
             args.Player.SendInfoMessage("Reloaded MoreAdminCommands config file");
         }
         #endregion

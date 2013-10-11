@@ -95,6 +95,8 @@ namespace MoreAdminCommands
             : base(game)
         {
             Order = -1;
+
+            config = new MACconfig();
         }
 
         #region OnInitialize
@@ -130,29 +132,6 @@ namespace MoreAdminCommands
             Commands.ChatCommands.Add(new Command("mac.freeze", Cmds.FreezeTime, "freezetime", "ft"));
             Commands.ChatCommands.Add(new Command(Cmds.TeamUnlock, "teamunlock"));
             #endregion
-        }
-        #endregion
-
-        #region SetUpConfig
-        public static void SetUpConfig()
-        {
-            try
-            {
-                if (!File.Exists(savePath))
-                {
-                    config.Write(savePath);
-                }
-                else
-                {
-                    config = MACconfig.Read(savePath);
-                }
-            }
-            catch
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Invalid value in MoreAdminCommands.json");
-                Console.ResetColor();
-            }
         }
         #endregion
 
