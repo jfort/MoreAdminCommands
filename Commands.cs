@@ -310,7 +310,7 @@ namespace MoreAdminCommands
             }
         }
 
-        public void FreezeTime(CommandArgs args)
+        public static void FreezeTime(CommandArgs args)
         {
             timeFrozen = !timeFrozen;
             freezeDayTime = Main.dayTime;
@@ -326,7 +326,7 @@ namespace MoreAdminCommands
             }
         }
 
-        private static void KillAll(CommandArgs args)
+        public static void KillAll(CommandArgs args)
         {
             foreach (TSPlayer plr in TShock.Players)
             {
@@ -343,7 +343,7 @@ namespace MoreAdminCommands
             args.Player.SendMessage(string.Format("You just killed everyone!"));
         }
 
-        private static void ForceGive(CommandArgs args)
+        public static void ForceGive(CommandArgs args)
         {
             if (args.Parameters.Count < 2)
             {
