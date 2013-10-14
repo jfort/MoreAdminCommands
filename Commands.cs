@@ -109,13 +109,47 @@ namespace MoreAdminCommands
         #region MoonPhase
         public static void MoonPhase(CommandArgs args)
         {
-            try
+            int phase;
+            bool result = Int32.TryParse(args.Parameters[0], out phase);
+            if (result && phase > -1 && phase < 8 && args.Parameters.Count > 0)
             {
-                Main.moonPhase = Convert.ToInt32(args.Parameters[0]);
-                NetMessage.SendData((int)PacketTypes.TimeSet, -1, -1, "", 0, 0, Main.sunModY, Main.moonModY);
-                args.Player.SendInfoMessage("The moon phase has been changed!");
+                string phaseName = "";
+                Main.moonPhase = phase;
+
+                #region PhaseName
+                switch (phase)
+                {
+                    case 0:
+                        phaseName = "full";
+                        break;
+                    case 1:
+                        phaseName = "3/4";
+                        break;
+                    case 2:
+                        phaseName = "1/2";
+                        break;
+                    case 3:
+                        phaseName = "1/4";
+                        break;
+                    case 4:
+                        phaseName = "new";
+                        break;
+                    case 5:
+                        phaseName = "1/4";
+                        break;
+                    case 6:
+                        phaseName = "1/2";
+                        break;
+                    case 7:
+                        phaseName = "3/4";
+                        break;
+                }
+                #endregion
+
+                TSPlayer.All.SendInfoMessage("Moon phase set to {0}.", phaseName);
             }
-            catch (Exception) { args.Player.SendErrorMessage("Invalid phase number!"); }
+            else
+                args.Player.SendErrorMessage("Invalid usage! Proper usage: /moon [0-7]");
         }
         #endregion
 
@@ -432,11 +466,11 @@ namespace MoreAdminCommands
 
                 if (player.isHeal)
                 {
-                    args.Player.SendMessage("Auto Heal Mode is now on.");
+                    args.Player.SendSuccessMessage("Auto Heal Mode is now on.");
                 }
                 else
                 {
-                    args.Player.SendMessage("Auto Heal Mode is now off.");
+                    args.Player.SendSuccessMessage("Auto Heal Mode is now off.");
                 }
             }
             else
@@ -464,7 +498,7 @@ namespace MoreAdminCommands
 
                     if (player.isHeal)
                     {
-                        args.Player.SendMessage("You have activated auto-heal for " + ply.Name + ".");
+                        args.Player.SendInfoMessage("You have activated auto-heal for " + ply.Name + ".");
                         ply.SendInfoMessage(args.Player.Name + " has activated auto-heal on you");
                     }
 
@@ -669,9 +703,7 @@ namespace MoreAdminCommands
             {
                 try
                 {
-
                     nearby = Convert.ToInt32(args.Parameters[0]);
-
                 }
                 catch { args.Player.SendErrorMessage("Improper Syntax. Proper Syntax: /butchernear [distance]"); return; }
             }
@@ -698,7 +730,7 @@ namespace MoreAdminCommands
             {
                 if (Main.npc[i].active)
                 {
-                    TSPlayer.Server.StrikeNPC(i, Main.npc[i].lifeMax + 1, 90f, 1);
+                    TSPlayer.Server.StrikeNPC(i, 99999, 90f, 1);
                     killcount++;
                 }
             }

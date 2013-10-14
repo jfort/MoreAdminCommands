@@ -196,9 +196,6 @@ namespace MoreAdminCommands
 
                     if (player.isHeal)
                     {
-
-                        Item heart = TShockAPI.TShock.Utils.GetItemById(58);
-                        Item star = TShockAPI.TShock.Utils.GetItemById(184);
                         if (HP <= MaxHP / 2)
                         {
                             player.TSPlayer.Heal(MaxHP - HP);
@@ -224,13 +221,11 @@ namespace MoreAdminCommands
 
                     if (player.isHeal)
                     {
-
-                        Item heart = TShockAPI.TShock.Utils.GetItemById(58);
                         Item star = TShockAPI.TShock.Utils.GetItemById(184);
                         if (Mana <= MaxMana / 2)
                         {
-                            NetMessage.SendData((int)PacketTypes.PlayerMana, -1, -1, "", player.Index, MaxMana - Mana);
-                            player.TSPlayer.SendSuccessMessage("You just got healed!");
+                            TShock.Players[playerID].GiveItem(star.type, star.name, star.width, star.height, star.maxStack);
+                            player.TSPlayer.SendSuccessMessage("Your mana has been restored!!");
                         }
                     }
                 }
