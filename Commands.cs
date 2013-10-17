@@ -298,7 +298,7 @@ namespace MoreAdminCommands
         {
             if (args.Parameters.Count < 1 || args.Parameters.Count > 3)
             {
-                args.Player.SendMessage("Invalid syntax! Proper syntax: /spawnmob <mob name/id> [amount] [username]", Color.Red);
+                args.Player.SendMessage("Invalid syntax! Proper syntax: /smp <mob name/id> [amount] [username]", Color.Red);
                 return;
             }
             if (args.Parameters[0].Length == 0)
@@ -388,35 +388,44 @@ namespace MoreAdminCommands
         {
             if (args.Parameters.Count < 2)
             {
-                args.Player.SendMessage("Invalid syntax! Proper syntax: /forcegive <item type/id> <player> [item amount]", Color.Red);
+                args.Player.SendErrorMessage(
+                    "Invalid syntax! Proper syntax: /forcegive <item type/id> <player> [item amount] [prefix id/name]");
                 return;
             }
             if (args.Parameters[0].Length == 0)
             {
-                args.Player.SendMessage("Missing item name/id", Color.Red);
+                args.Player.SendErrorMessage("Missing item name/id.");
                 return;
             }
             if (args.Parameters[1].Length == 0)
             {
-                args.Player.SendMessage("Missing player name", Color.Red);
+                args.Player.SendErrorMessage("Missing player name.");
                 return;
             }
             int itemAmount = 0;
-            var items = TShockAPI.TShock.Utils.GetItemByIdOrName(args.Parameters[0]);
+            int prefix = 0;
+            var items = TShock.Utils.GetItemByIdOrName(args.Parameters[0]);
             args.Parameters.RemoveAt(0);
             string plStr = args.Parameters[0];
             args.Parameters.RemoveAt(0);
-            if (args.Parameters.Count > 0)
-                int.TryParse(args.Parameters[args.Parameters.Count - 1], out itemAmount);
+            if (args.Parameters.Count == 1)
+                int.TryParse(args.Parameters[0], out itemAmount);
+            else if (args.Parameters.Count == 2)
+            {
+                int.TryParse(args.Parameters[0], out itemAmount);
+                var found = TShock.Utils.GetPrefixByIdOrName(args.Parameters[1]);
+                if (found.Count == 1)
+                    prefix = found[0];
+            }
 
 
             if (items.Count == 0)
             {
-                args.Player.SendMessage("Invalid item type!", Color.Red);
+                args.Player.SendErrorMessage("Invalid item type!");
             }
             else if (items.Count > 1)
             {
-                args.Player.SendMessage(string.Format("More than one ({0}) item matched!", items.Count), Color.Red);
+                args.Player.SendErrorMessage(string.Format("More than one ({0}) item matched!", items.Count));
             }
             else
             {
@@ -426,31 +435,31 @@ namespace MoreAdminCommands
                     var players = TShockAPI.TShock.Utils.FindPlayer(plStr);
                     if (players.Count == 0)
                     {
-                        args.Player.SendMessage("Invalid player!", Color.Red);
+                        args.Player.SendErrorMessage("Invalid player!");
                     }
                     else if (players.Count > 1)
                     {
-                        args.Player.SendMessage("More than one player matched!", Color.Red);
+                        args.Player.SendErrorMessage("More than one player matched!");
                     }
                     else
                     {
                         var plr = players[0];
-                        int stacks = 1;
-                        if (itemAmount == 0)
+                        if (itemAmount == 0 || itemAmount > item.maxStack)
                             itemAmount = item.maxStack;
-                        if (itemAmount > item.maxStack)
-                            stacks = itemAmount / item.maxStack + 1;
-                        for (int i = 1; i < stacks; i++)
-                            plr.GiveItem(item.type, item.name, item.width, item.height, item.maxStack);
-                        if (itemAmount - (itemAmount / item.maxStack) * item.maxStack != 0)
-                            plr.GiveItem(item.type, item.name, item.width, item.height, itemAmount - (itemAmount / item.maxStack) * item.maxStack);
-                        args.Player.SendInfoMessage(string.Format("Gave {0} {1} {2}(s).", plr.Name, itemAmount, item.name));
-                        plr.SendInfoMessage(string.Format("{0} gave you {1} {2}(s).", args.Player.Name, itemAmount, item.name));
+                        if (plr.GiveItemCheck(item.type, item.name, item.width, item.height, itemAmount, prefix))
+                        {
+                            args.Player.SendSuccessMessage("Gave {0} {1} {2}(s).", plr.Name, itemAmount, item.name);
+                            plr.SendSuccessMessage("{0} gave you {1} {2}(s).", args.Player.Name, itemAmount, item.name);
+                        }
+                        else
+                        {
+                            args.Player.SendErrorMessage("The item is banned and the config prevents spawning banned items.");
+                        }
                     }
                 }
                 else
                 {
-                    args.Player.SendMessage("Invalid item type!", Color.Red);
+                    args.Player.SendErrorMessage("Invalid item type!");
                 }
             }
         }
@@ -649,7 +658,7 @@ namespace MoreAdminCommands
         {
             if (args.Parameters.Count < 1 || args.Parameters.Count > 2)
             {
-                args.Player.SendMessage("Invalid syntax! Proper syntax: /spawnbyme <mob name/id> [amount]", Color.Red);
+                args.Player.SendMessage("Invalid syntax! Proper syntax: /sbm <mob name/id> [amount]", Color.Red);
                 return;
             }
 
