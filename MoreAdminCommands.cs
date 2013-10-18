@@ -192,29 +192,40 @@ namespace MoreAdminCommands
         void OnGetData(GetDataEventArgs e)
         {
             #region PlayerHP
-            if (e.MsgID == PacketTypes.PlayerHp)
+            try
             {
-                using (var data = new MemoryStream(e.Msg.readBuffer, e.Index, e.Length))
+                if (e.MsgID == PacketTypes.PlayerHp)
                 {
-                    var reader = new BinaryReader(data);
-                    var playerID = reader.ReadByte();
-                    var HP = reader.ReadInt16();
-                    var MaxHP = reader.ReadInt16();
-
-                    if (Utils.GetPlayers((int)playerID) != null)
+                    using (var data = new MemoryStream(e.Msg.readBuffer, e.Index, e.Length))
                     {
-                        var player = Utils.GetPlayers((int)playerID);
+                        var reader = new BinaryReader(data);
+                        var playerID = reader.ReadByte();
+                        var HP = reader.ReadInt16();
+                        var MaxHP = reader.ReadInt16();
 
-                        if (player.isHeal)
+                        if (Utils.GetPlayers((int)playerID) != null)
                         {
-                            if (HP <= MaxHP / 2)
+                            var player = Utils.GetPlayers((int)playerID);
+
+                            if (player.isHeal)
                             {
-                                player.TSPlayer.Heal(500);
-                                player.TSPlayer.SendSuccessMessage("You just got healed!");
+                                if (HP <= MaxHP / 2)
+                                {
+                                    player.TSPlayer.Heal(500);
+                                    player.TSPlayer.SendSuccessMessage("You just got healed!");
+                                }
                             }
+                        }
+                        else
+                        {
+                            Log.ConsoleError("player is null");
                         }
                     }
                 }
+            }
+            catch (Exception x)
+            {
+                Log.ConsoleError(x.ToString());
             }
             #endregion
 
@@ -245,133 +256,155 @@ namespace MoreAdminCommands
             #endregion
 
             #region PlayerDamage
-            else if (e.MsgID == PacketTypes.PlayerDamage)
+            if (e.MsgID == PacketTypes.PlayerDamage)
             {
-                using (var data = new MemoryStream(e.Msg.readBuffer, e.Index, e.Length))
+                try
                 {
-                    var reader = new BinaryReader(data);
-                    var ply = reader.ReadByte();
-                    var hitDirection = reader.ReadByte();
-                    var damage = reader.ReadInt16();
-
-
-                    if ((damage > config.maxDamage || damage < 0) && !TShock.Players[e.Msg.whoAmI].Group.HasPermission("ignorecheatdetection") && e.Msg.whoAmI != ply)
+                    using (var data = new MemoryStream(e.Msg.readBuffer, e.Index, e.Length))
                     {
-                        if (config.maxDamageBan)
-                        {
-                            TShockAPI.TShock.Utils.Ban(TShock.Players[e.Msg.whoAmI], "You have exceeded the max damage limit.");
-                        }
-                        else if (config.maxDamageKick)
-                        {
-                            TShockAPI.TShock.Utils.Kick(TShock.Players[e.Msg.whoAmI], "You have exceeded the max damage limit.");
-                        }
-                        if (config.maxDamageIgnore)
-                        {
-                            e.Handled = true;
-                        }
+                        var reader = new BinaryReader(data);
+                        var ply = reader.ReadByte();
+                        var hitDirection = reader.ReadByte();
+                        var damage = reader.ReadInt16();
 
+
+                        if ((damage > config.maxDamage || damage < 0) && !TShock.Players[e.Msg.whoAmI].Group.HasPermission("ignorecheatdetection") && e.Msg.whoAmI != ply)
+                        {
+                            if (config.maxDamageBan)
+                            {
+                                TShockAPI.TShock.Utils.Ban(TShock.Players[e.Msg.whoAmI], "You have exceeded the max damage limit.");
+                            }
+                            else if (config.maxDamageKick)
+                            {
+                                TShockAPI.TShock.Utils.Kick(TShock.Players[e.Msg.whoAmI], "You have exceeded the max damage limit.");
+                            }
+                            if (config.maxDamageIgnore)
+                            {
+                                e.Handled = true;
+                            }
+
+                        }
+                        //if (viewAll[ply])
+                        //{
+                        //    e.Handled = true;         //Should remove invincibility while /view'ing people
+                        //}
                     }
-                    //if (viewAll[ply])
-                    //{
-                    //    e.Handled = true;         //Should remove invincibility while /view'ing people
-                    //}
+                }
+                catch (Exception x)
+                {
+                    Log.ConsoleError(x.ToString());
                 }
             }
             #endregion
 
             #region NPCStrike
-            else if (e.MsgID == PacketTypes.NpcStrike)
+            if (e.MsgID == PacketTypes.NpcStrike)
             {
-                using (var data = new MemoryStream(e.Msg.readBuffer, e.Index, e.Length))
+                try
                 {
-                    var reader = new BinaryReader(data);
-                    var npcID = reader.ReadInt16();
-                    var damage = reader.ReadInt16();
-                    if ((damage > config.maxDamage || damage < 0) && !TShock.Players[e.Msg.whoAmI].Group.HasPermission("ignorecheatdetection"))
+                    using (var data = new MemoryStream(e.Msg.readBuffer, e.Index, e.Length))
                     {
+                        var reader = new BinaryReader(data);
+                        var npcID = reader.ReadInt16();
+                        var damage = reader.ReadInt16();
+                        if ((damage > config.maxDamage || damage < 0) && !TShock.Players[e.Msg.whoAmI].Group.HasPermission("ignorecheatdetection"))
+                        {
 
-                        if (config.maxDamageBan)
-                        {
-                            TShockAPI.TShock.Utils.Ban(TShock.Players[e.Msg.whoAmI], "You have exceeded the max damage limit.");
-                        }
-                        else if (config.maxDamageKick)
-                        {
-                            TShockAPI.TShock.Utils.Kick(TShock.Players[e.Msg.whoAmI], "You have exceeded the max damage limit.");
-                        }
-                        if (config.maxDamageIgnore)
-                        {
-                            e.Handled = true;
+                            if (config.maxDamageBan)
+                            {
+                                TShockAPI.TShock.Utils.Ban(TShock.Players[e.Msg.whoAmI], "You have exceeded the max damage limit.");
+                            }
+                            else if (config.maxDamageKick)
+                            {
+                                TShockAPI.TShock.Utils.Kick(TShock.Players[e.Msg.whoAmI], "You have exceeded the max damage limit.");
+                            }
+                            if (config.maxDamageIgnore)
+                            {
+                                e.Handled = true;
+                            }
                         }
                     }
+                }
+                catch (Exception x)
+                {
+                    Log.ConsoleError(x.ToString());
                 }
             }
             #endregion
 
             #region PlayerTeam
-            else if (e.MsgID == PacketTypes.PlayerTeam)
+            if (e.MsgID == PacketTypes.PlayerTeam)
             {
-                using (var data = new MemoryStream(e.Msg.readBuffer, e.Index, e.Length))
+                try
                 {
-                    var reader = new BinaryReader(data);
-                    var ply = reader.ReadByte();
-                    var team = reader.ReadByte();
-
-                    if (Utils.GetPlayers((int)ply) != null)
+                    using (var data = new MemoryStream(e.Msg.readBuffer, e.Index, e.Length))
                     {
-                        var player = Utils.GetPlayers((int)ply);
+                        var reader = new BinaryReader(data);
+                        var ply = reader.ReadByte();
+                        var team = reader.ReadByte();
 
-                        switch (team)
+                        if (Utils.GetPlayers((int)ply) != null)
                         {
+                            var player = Utils.GetPlayers((int)ply);
 
-                            case 1:
-                                if (config.redPass != "")
-                                {
-                                    if ((!player.accessRed) && (TShock.Players[ply].Group.Name != "superadmin"))
+                            switch (team)
+                            {
+                                case 1:
+                                    if (config.redPass != "")
                                     {
-                                        e.Handled = true;
-                                        TShock.Players[ply].SendMessage("This team is locked, use /teamunlock red [password] to access it.", Color.Red);
-                                        TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                        if ((!player.accessRed) && (TShock.Players[ply].Group.Name != "superadmin"))
+                                        {
+                                            e.Handled = true;
+                                            TShock.Players[ply].SendMessage("This team is locked, use /teamunlock red [password] to access it.", Color.Red);
+                                            TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                        }
                                     }
-                                }
-                                break;
+                                    break;
 
-                            case 2:
-                                if (config.greenPass != "")
-                                {
-                                    if ((!player.accessGreen) && (TShock.Players[ply].Group.Name != "superadmin"))
+                                case 2:
+                                    if (config.greenPass != "")
                                     {
-                                        e.Handled = true;
-                                        TShock.Players[ply].SendMessage("This team is locked, use /teamunlock green [password] to access it.", Color.Red);
-                                        TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                        if ((!player.accessGreen) && (TShock.Players[ply].Group.Name != "superadmin"))
+                                        {
+                                            e.Handled = true;
+                                            TShock.Players[ply].SendMessage("This team is locked, use /teamunlock green [password] to access it.", Color.Red);
+                                            TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                        }
                                     }
-                                }
-                                break;
+                                    break;
 
-                            case 3:
-                                if (config.bluePass != "")
-                                {
-                                    if ((!player.accessBlue) && (TShock.Players[ply].Group.Name != "superadmin"))
+                                case 3:
+                                    if (config.bluePass != "")
                                     {
-                                        e.Handled = true;
-                                        TShock.Players[ply].SendMessage("This team is locked, use /teamunlock blue [password] to access it.", Color.Red);
-                                        TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                        if ((!player.accessBlue) && (TShock.Players[ply].Group.Name != "superadmin"))
+                                        {
+                                            e.Handled = true;
+                                            TShock.Players[ply].SendMessage("This team is locked, use /teamunlock blue [password] to access it.", Color.Red);
+                                            TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                        }
                                     }
-                                }
-                                break;
+                                    break;
 
-                            case 4:
-                                if (config.yellowPass != "")
-                                {
-                                    if ((!player.accessYellow) && (TShock.Players[ply].Group.Name != "superadmin"))
+                                case 4:
+                                    if (config.yellowPass != "")
                                     {
-                                        e.Handled = true;
-                                        TShock.Players[ply].SendMessage("This team is locked, use /teamunlock yellow [password] to access it.", Color.Red);
-                                        TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                        if ((!player.accessYellow) && (TShock.Players[ply].Group.Name != "superadmin"))
+                                        {
+                                            e.Handled = true;
+                                            TShock.Players[ply].SendMessage("This team is locked, use /teamunlock yellow [password] to access it.", Color.Red);
+                                            TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                        }
                                     }
-                                }
-                                break;
+                                    break;
+                            }
                         }
+                        else
+                            Log.ConsoleError("Player is null");
                     }
+                }
+                catch (Exception x)
+                {
+                    Log.ConsoleError(x.ToString());
                 }
             }
             #endregion
