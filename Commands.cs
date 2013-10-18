@@ -823,9 +823,9 @@ namespace MoreAdminCommands
             for (int i = 0; i < Main.npc.Length; i++)
             {
                 if ((Main.npc[i].active && 
-                    Utils.getDistance(new Vector2(args.Player.X, args.Player.Y), Main.npc[i].position) < nearby))
+                    Utils.getDistance(new Vector2(args.Player.X, args.Player.Y), Main.npc[i].position, nearby)))
                 {
-                    TSPlayer.Server.StrikeNPC(i, Main.npc[i].lifeMax + 1, 1f, 1);
+                    TSPlayer.Server.StrikeNPC(i, 99999, 1f, 1);
                     killcount++;
                 }
             }

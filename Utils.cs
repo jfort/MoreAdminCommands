@@ -214,9 +214,13 @@ namespace MoreAdminCommands
         #endregion
 
         #region getDistance
-        public static int getDistance(Vector2 player, Vector2 mob)
+        public static bool getDistance(Vector2 player, Vector2 mob, int radius)
         {
-            return (int)((player.X - mob.X) + (player.Y - mob.Y));
+            if (Math.Sqrt((int)(mob.X - player.X) ^ 2 + (int)(mob.Y - player.Y) ^ 2) < radius)
+            {
+                return true;
+            }
+            return false;
         }
         #endregion
 
@@ -234,7 +238,7 @@ namespace MoreAdminCommands
                     {
                         flag = true;
 
-                        foreach (KeyValuePair<string, int> pair in checkGroup.npcdet)
+                        foreach (KeyValuePair<string, int> pair in checkGroup.npcDetails)
                         {
                             var mobs = TShock.Utils.GetNPCByName(pair.Key);
 

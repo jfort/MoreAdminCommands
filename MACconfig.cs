@@ -10,12 +10,12 @@ namespace MoreAdminCommands
     public class NPCobj
     {
         public string groupname;
-        public Dictionary<string, int> npcdet;
+        public Dictionary<string, int> npcDetails;
 
         public NPCobj(string gna, Dictionary<string, int> na)
         {
             groupname = gna;
-            npcdet = na;
+            npcDetails = na;
         }
     }
 
