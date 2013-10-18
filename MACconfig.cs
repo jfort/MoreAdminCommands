@@ -85,6 +85,7 @@ namespace MoreAdminCommands
             { "mother slime", 5}
             }
             ));
+            SpawnGroupNPCs.Add(new NPCset(NPCs));
 
             var str = JsonConvert.SerializeObject(this, Formatting.Indented);
             using (var sw = new StreamWriter(stream))
