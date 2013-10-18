@@ -343,7 +343,7 @@ namespace MoreAdminCommands
                         var ply = reader.ReadByte();
                         var team = reader.ReadByte();
 
-                        if (Utils.GetPlayers((int)ply) != null)
+                        if (Utils.GetPlayers(e.Msg.whoAmI) != null)
                         {
                             var player = Utils.GetPlayers((int)ply);
 
