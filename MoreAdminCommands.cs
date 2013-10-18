@@ -199,7 +199,7 @@ namespace MoreAdminCommands
                     var HP = reader.ReadInt16();
                     var MaxHP = reader.ReadInt16();
 
-                    var player = Utils.GetPlayers(playerID);
+                    var player = Utils.GetPlayers((int)playerID);
 
                     if (player.isHeal)
                     {
@@ -214,29 +214,29 @@ namespace MoreAdminCommands
             #endregion
 
             #region PlayerMana
-            else if (e.MsgID == PacketTypes.PlayerMana)
-            {
+            //else if (e.MsgID == PacketTypes.PlayerMana)
+            //{
 
-                using (var data = new MemoryStream(e.Msg.readBuffer, e.Index, e.Length))
-                {
-                    var reader = new BinaryReader(data);
-                    var playerID = reader.ReadByte();
-                    var Mana = reader.ReadInt16();
-                    var MaxMana = reader.ReadInt16();
+            //    using (var data = new MemoryStream(e.Msg.readBuffer, e.Index, e.Length))
+            //    {
+            //        var reader = new BinaryReader(data);
+            //        var playerID = reader.ReadByte();
+            //        var Mana = reader.ReadInt16();
+            //        var MaxMana = reader.ReadInt16();
 
-                    var player = Utils.GetPlayers(playerID);
+            //        var player = Utils.GetPlayers((int)playerID);
 
-                    if (player.isHeal)
-                    {
-                        Item star = TShockAPI.TShock.Utils.GetItemById(184);
-                        if (Mana <= MaxMana / 2)
-                        {
-                            TShock.Players[playerID].GiveItem(star.type, star.name, star.width, star.height, star.maxStack);
-                            player.TSPlayer.SendSuccessMessage("Your mana has been restored!!");
-                        }
-                    }
-                }
-            }
+            //        if (player.isHeal)
+            //        {
+            //            Item star = TShockAPI.TShock.Utils.GetItemById(184);
+            //            if (Mana <= MaxMana / 2)
+            //            {
+            //                TShock.Players[playerID].GiveItem(star.type, star.name, star.width, star.height, star.maxStack);
+            //                player.TSPlayer.SendSuccessMessage("Your mana has been restored!!");
+            //            }
+            //        }
+            //    }
+            //}
             #endregion
 
             #region PlayerDamage
@@ -312,7 +312,7 @@ namespace MoreAdminCommands
                     var ply = reader.ReadByte();
                     var team = reader.ReadByte();
 
-                    var player = Utils.GetPlayers(ply);
+                    var player = Utils.GetPlayers((int)ply);
 
                     switch (team)
                     {
