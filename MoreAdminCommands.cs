@@ -138,9 +138,12 @@ namespace MoreAdminCommands
         #region OnJoin
         public void OnJoin(GreetPlayerEventArgs args)
         {
-            var player = new TSPlayer(args.Who);
-            var readTableIP = SQLEditor.ReadColumn("muteList", "IP", new List<SqlValue>());
+            Players.Add(new Mplayer(args.Who));
+
+            var player = TShock.Players[args.Who];
             var Mplayer = Utils.GetPlayers(args.Who);
+
+            var readTableIP = SQLEditor.ReadColumn("muteList", "IP", new List<SqlValue>());
 
             if (readTableIP.Contains(player.IP))
             {
