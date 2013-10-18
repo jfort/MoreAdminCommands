@@ -558,11 +558,11 @@ namespace MoreAdminCommands
         #endregion
 
         #region Stuff
-        public static int distance(Vector2 point1, Point point2)
-        {
-            return (Convert.ToInt32(Math.Sqrt(Math.Pow(point1.X - point2.X, 2)
-                + Math.Pow(point1.Y - point2.Y, 2))));
-        }
+        //public static int distance(Vector2 point1, Point point2)
+        //{
+        //    return (Convert.ToInt32(Math.Sqrt(Math.Pow(point1.X - point2.X, 2)
+        //        + Math.Pow(point1.Y - point2.Y, 2))));
+        //}
 
         public static bool findIfPlayingCommand(string text)
         {

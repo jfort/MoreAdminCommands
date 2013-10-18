@@ -732,10 +732,11 @@ namespace MoreAdminCommands
                     getDistance(new Vector2(args.Player.X, args.Player.Y), Main.npc[i].position) < nearby))
                 {
                     TSPlayer.Server.StrikeNPC(i, Main.npc[i].lifeMax + 1, 1f, 1);
+                    killcount++;
                 }
             }
             args.Player.SendInfoMessage(string.Format("Killed {0} NPC(s) within a radius of " + nearby.ToString() + " blocks.", killcount));
-            TSPlayer.All.SendInfoMessage(string.Format("{0} killed {1} NPC(s)"));
+            TSPlayer.All.SendInfoMessage(string.Format("{0} killed {1} NPC(s)", args.Player.Name, killcount));
         }
         #endregion
 
