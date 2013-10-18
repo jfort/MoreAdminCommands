@@ -210,7 +210,8 @@ namespace MoreAdminCommands
 
                 switch (args.Parameters[0].ToLower())
                 {
-                    case "red": if (str == MAC.config.redPass)
+                    case "red":
+                        if (str == MAC.config.redPass)
                         {
                             player.accessRed = true;
                             args.Player.SendErrorMessage("Red team unlocked.");
@@ -221,7 +222,8 @@ namespace MoreAdminCommands
                         }
                         break;
 
-                    case "blue": if (str == MAC.config.bluePass)
+                    case "blue":
+                        if (str == MAC.config.bluePass)
                         {
                             player.accessBlue = true;
                             args.Player.SendMessage("Blue team unlocked.", Color.LightBlue);
@@ -232,7 +234,8 @@ namespace MoreAdminCommands
                         }
                         break;
 
-                    case "green": if (str == MAC.config.greenPass)
+                    case "green":
+                        if (str == MAC.config.greenPass)
                         {
                             player.accessGreen = true;
                             args.Player.SendSuccessMessage("Green team unlocked.");
@@ -719,17 +722,27 @@ namespace MoreAdminCommands
             int killcount = 0;
             for (int i = 0; i < Main.npc.Length; i++)
             {
-                if ((Main.npc[i].active) && (MAC.distance(new Vector2(Main.item[i].position.X, Main.item[i].position.Y), new Point((int)Main.player[args.Player.Index].position.X, (int)Main.player[args.Player.Index].position.Y)) < nearby * 16))
-                {
+                //if ((Main.npc[i].active) && (MAC.distance(new Vector2(Main.item[i].position.X, Main.item[i].position.Y), new Point((int)Main.player[args.Player.Index].position.X, (int)Main.player[args.Player.Index].position.Y)) < nearby * 16))
+                //{
+                //    TSPlayer.Server.StrikeNPC(i, 99999, 90f, 1);
+                //    killcount++;
+                //}
 
-                    TSPlayer.Server.StrikeNPC(i, 99999, 90f, 1);
-                    killcount++;
+                if ((Main.npc[i].active && 
+                    getDistance(new Vector2(args.Player.X, args.Player.Y), Main.npc[i].position) < nearby))
+                {
+                    TSPlayer.Server.StrikeNPC(i, Main.npc[i].lifeMax + 1, 1f, 1);
                 }
             }
-            TSPlayer.All.SendInfoMessage(string.Format("Killed {0} NPCs within a radius of " + nearby.ToString() + " blocks.", killcount));
-
+            args.Player.SendInfoMessage(string.Format("Killed {0} NPC(s) within a radius of " + nearby.ToString() + " blocks.", killcount));
+            TSPlayer.All.SendInfoMessage(string.Format("{0} killed {1} NPC(s)"));
         }
         #endregion
+
+        public static int getDistance(Vector2 player, Vector2 mob)
+        {
+            return (int)((player.X - mob.X) + (player.Y - mob.Y));
+        }
 
         #region ButcherAll
         public static void ButcherAll(CommandArgs args)
@@ -788,7 +801,7 @@ namespace MoreAdminCommands
 
             else if (npcs.Count > 1)
             {
-                args.Player.SendMessage(string.Format("More than one ({0}) npc matched!", npcs.Count), Color.Red);
+                TShock.Utils.SendMultipleMatchError(args.Player, npcs);
             }
 
             else

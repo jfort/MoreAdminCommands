@@ -132,6 +132,8 @@ namespace MoreAdminCommands
             Commands.ChatCommands.Add(new Command("mac.freeze", Cmds.FreezeTime, "freezetime", "ft"));
             Commands.ChatCommands.Add(new Command(Cmds.TeamUnlock, "teamunlock"));
             #endregion
+
+            Utils.SetUpConfig();
         }
         #endregion
 
@@ -315,33 +317,53 @@ namespace MoreAdminCommands
                     switch (team)
                     {
 
-                        case 1: if ((!player.accessRed) && (TShock.Players[ply].Group.Name != "superadmin"))
+                        case 1:
+                            if (config.redPass != "")
                             {
-                                e.Handled = true;
-                                TShock.Players[ply].SendMessage("This team is locked, use /teamunlock red [password] to access it.", Color.Red);
-                                TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
-                            } break;
+                                if ((!player.accessRed) && (TShock.Players[ply].Group.Name != "superadmin"))
+                                {
+                                    e.Handled = true;
+                                    TShock.Players[ply].SendMessage("This team is locked, use /teamunlock red [password] to access it.", Color.Red);
+                                    TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                }
+                            }
+                            break;
 
-                        case 2: if ((!player.accessGreen) && (TShock.Players[ply].Group.Name != "superadmin"))
+                        case 2:
+                            if (config.greenPass != "")
                             {
-                                e.Handled = true;
-                                TShock.Players[ply].SendMessage("This team is locked, use /teamunlock green [password] to access it.", Color.Red);
-                                TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
-                            } break;
+                                if ((!player.accessGreen) && (TShock.Players[ply].Group.Name != "superadmin"))
+                                {
+                                    e.Handled = true;
+                                    TShock.Players[ply].SendMessage("This team is locked, use /teamunlock green [password] to access it.", Color.Red);
+                                    TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                }
+                            }
+                            break;
 
-                        case 3: if ((!player.accessBlue) && (TShock.Players[ply].Group.Name != "superadmin"))
+                        case 3:
+                            if (config.bluePass != "")
                             {
-                                e.Handled = true;
-                                TShock.Players[ply].SendMessage("This team is locked, use /teamunlock blue [password] to access it.", Color.Red);
-                                TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
-                            } break;
+                                if ((!player.accessBlue) && (TShock.Players[ply].Group.Name != "superadmin"))
+                                {
+                                    e.Handled = true;
+                                    TShock.Players[ply].SendMessage("This team is locked, use /teamunlock blue [password] to access it.", Color.Red);
+                                    TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                }
+                            }
+                            break;
 
-                        case 4: if ((!player.accessYellow) && (TShock.Players[ply].Group.Name != "superadmin"))
+                        case 4:
+                            if (config.yellowPass != "")
                             {
-                                e.Handled = true;
-                                TShock.Players[ply].SendMessage("This team is locked, use /teamunlock yellow [password] to access it.", Color.Red);
-                                TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
-                            } break;
+                                if ((!player.accessYellow) && (TShock.Players[ply].Group.Name != "superadmin"))
+                                {
+                                    e.Handled = true;
+                                    TShock.Players[ply].SendMessage("This team is locked, use /teamunlock yellow [password] to access it.", Color.Red);
+                                    TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                }
+                            }
+                            break;
                     }
                 }
             }
@@ -538,7 +560,8 @@ namespace MoreAdminCommands
         #region Stuff
         public static int distance(Vector2 point1, Point point2)
         {
-            return (Convert.ToInt32(Math.Sqrt(Math.Pow(point1.X - point2.X, 2) + Math.Pow(point1.Y - point2.Y, 2))));
+            return (Convert.ToInt32(Math.Sqrt(Math.Pow(point1.X - point2.X, 2)
+                + Math.Pow(point1.Y - point2.Y, 2))));
         }
 
         public static bool findIfPlayingCommand(string text)
