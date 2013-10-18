@@ -7,6 +7,27 @@ using System.IO;
 
 namespace MoreAdminCommands
 {
+    public class NPCobj
+    {
+        public string groupname;
+        public Dictionary<string, int> npcdet;
+
+        public NPCobj(string gna, Dictionary<string, int> na)
+        {
+            groupname = gna;
+            npcdet = na;
+        }
+    }
+
+    public class NPCset
+    {
+        public List<NPCobj> NPCList;
+        public NPCset(List<NPCobj> NPCList)
+        {
+            this.NPCList = NPCList;
+        }
+    }
+
     public class MACconfig
     {
         public string defaultMuteAllReason = "Listen to find out";
@@ -22,7 +43,7 @@ namespace MoreAdminCommands
         public bool maxDamageKick = false;
         public bool maxDamageBan = false;
 
-
+        public List<NPCset> SpawnGroupNPCs;
 
         public static MACconfig Read(string path)
         {
@@ -55,6 +76,16 @@ namespace MoreAdminCommands
 
         public void Write(Stream stream)
         {
+            SpawnGroupNPCs = new List<NPCset>();
+            List<NPCobj> NPCs = new List<NPCobj>();
+            NPCs.Add(new NPCobj("slimes",
+                new Dictionary<string, int>() {
+            { "green slime", 5 },
+            { "blue slime", 5},
+            { "mother slime", 5}
+            }
+            ));
+
             var str = JsonConvert.SerializeObject(this, Formatting.Indented);
             using (var sw = new StreamWriter(stream))
             {

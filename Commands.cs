@@ -19,6 +19,7 @@ namespace MoreAdminCommands
 {
     public class Cmds
     {
+        //Searching
         #region FindCommand
         public static void FindCommand(CommandArgs args)
         {
@@ -106,53 +107,8 @@ namespace MoreAdminCommands
         }
         #endregion
 
-        #region MoonPhase
-        public static void MoonPhase(CommandArgs args)
-        {
-            int phase;
-            bool result = Int32.TryParse(args.Parameters[0], out phase);
-            if (result && phase > -1 && phase < 8 && args.Parameters.Count > 0)
-            {
-                string phaseName = "";
-                Main.moonPhase = phase;
 
-                #region PhaseName
-                switch (phase)
-                {
-                    case 0:
-                        phaseName = "full";
-                        break;
-                    case 1:
-                        phaseName = "3/4";
-                        break;
-                    case 2:
-                        phaseName = "1/2";
-                        break;
-                    case 3:
-                        phaseName = "1/4";
-                        break;
-                    case 4:
-                        phaseName = "new";
-                        break;
-                    case 5:
-                        phaseName = "1/4";
-                        break;
-                    case 6:
-                        phaseName = "1/2";
-                        break;
-                    case 7:
-                        phaseName = "3/4";
-                        break;
-                }
-                #endregion
-
-                TSPlayer.All.SendInfoMessage("Moon phase set to {0}.", phaseName);
-            }
-            else
-                args.Player.SendErrorMessage("Invalid usage! Proper usage: /moon [0-7]");
-        }
-        #endregion
-
+        //Kills
         #region AutoKill
         public static void AutoKill(CommandArgs args)
         {
@@ -196,6 +152,24 @@ namespace MoreAdminCommands
             {
                 args.Player.SendErrorMessage("Invalid syntax.  Proper Syntax: /autokill playername");
             }
+        }
+        #endregion
+
+        #region KillAll
+        public static void KillAll(CommandArgs args)
+        {
+            foreach (TSPlayer plr in TShock.Players)
+            {
+                if (plr != null)
+                {
+                    if (plr != args.Player)
+                    {
+                        plr.DamagePlayer(999999);
+                    }
+                }
+            }
+            TSPlayer.All.SendInfoMessage(args.Player.Name + " killed everyone!");
+            args.Player.SendSuccessMessage("You killed everyone!");
         }
         #endregion
 
@@ -270,86 +244,8 @@ namespace MoreAdminCommands
         }
         #endregion
 
-        #region ViewAll
-        public static void ViewAll(CommandArgs args)
-        {
-            var player = Utils.GetPlayers(args.Player.Index);
 
-            player.viewAll = !player.viewAll;
-
-            if (player.viewAll)
-                args.Player.SendInfoMessage("View All mode has been turned on.");
-
-            else
-            {
-                args.Player.SetTeam(Main.player[args.Player.Index].team);
-                foreach (TSPlayer tply in TShock.Players)
-                {
-                    try
-                    {
-                        NetMessage.SendData((int)PacketTypes.PlayerTeam, args.Player.Index, -1, "", tply.Index);
-                    }
-                    catch (Exception) { }
-                }
-                args.Player.SendInfoMessage("View All mode has been turned off.");
-            }
-        }
-        #endregion
-
-        #region SpawnMobPlayer
-        public static void SpawnMobPlayer(CommandArgs args)
-        {
-            if (args.Parameters.Count < 1 || args.Parameters.Count > 3)
-            {
-                args.Player.SendMessage("Invalid syntax! Proper syntax: /smp <mob name/id> [amount] [username]", Color.Red);
-                return;
-            }
-            if (args.Parameters[0].Length == 0)
-            {
-                args.Player.SendMessage("Missing mob name/id", Color.Red);
-                return;
-            }
-            int amount = 1;
-            if (args.Parameters.Count == 3 && !int.TryParse(args.Parameters[1], out amount))
-            {
-                args.Player.SendMessage("Invalid syntax! Proper syntax: /spawnmob <mob name/id> [amount] [username]", Color.Red);
-                return;
-            }
-
-            amount = Math.Min(amount, Main.maxNPCs);
-
-            var npcs = TShockAPI.TShock.Utils.GetNPCByIdOrName(args.Parameters[0]);
-            var players = TShockAPI.TShock.Utils.FindPlayer(args.Parameters[2]);
-            if (players.Count == 0)
-            {
-                args.Player.SendMessage("Invalid player!", Color.Red);
-            }
-            else if (players.Count > 1)
-            {
-                args.Player.SendMessage("More than one player matched!", Color.Red);
-            }
-            else if (npcs.Count == 0)
-            {
-                args.Player.SendMessage("Invalid mob type!", Color.Red);
-            }
-            else if (npcs.Count > 1)
-            {
-                args.Player.SendMessage(string.Format("More than one ({0}) mob matched!", npcs.Count), Color.Red);
-            }
-            else
-            {
-                var npc = npcs[0];
-                if (npc.type >= 1 && npc.type < Main.maxNPCTypes)
-                {
-                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, players[0].TileX, players[0].TileY, 50, 20);
-                    TSPlayer.All.SendInfoMessage(string.Format("{0} was spawned {1} time(s) nearby {2}.", npc.name, amount, players[0].Name));
-                }
-                else
-                    args.Player.SendMessage("Invalid mob type!", Color.Red);
-            }
-        }
-        #endregion
-
+        //Misc server/player related
         #region FreezeTime
         public static void FreezeTime(CommandArgs args)
         {
@@ -365,24 +261,6 @@ namespace MoreAdminCommands
             {
                 TSPlayer.All.SendInfoMessage(args.Player.Name.ToString() + " unfroze time.");
             }
-        }
-        #endregion
-
-        #region KillAll
-        public static void KillAll(CommandArgs args)
-        {
-            foreach (TSPlayer plr in TShock.Players)
-            {
-                if (plr != null)
-                {
-                    if (plr != args.Player)
-                    {
-                        plr.DamagePlayer(999999);
-                    }
-                }
-            }
-            TSPlayer.All.SendInfoMessage(args.Player.Name + " killed everyone!");
-            args.Player.SendSuccessMessage("You killed everyone!");
         }
         #endregion
 
@@ -613,45 +491,128 @@ namespace MoreAdminCommands
         }
         #endregion
 
-        //Repair Spawn Group
-
-        #region MuteAll
-        public static void MuteAll(CommandArgs args)
+        #region MoonPhase
+        public static void MoonPhase(CommandArgs args)
         {
-
-            MAC.muteAll = !MAC.muteAll;
-            if (MAC.muteAll)
+            int phase;
+            bool result = Int32.TryParse(args.Parameters[0], out phase);
+            if (result && phase > -1 && phase < 8 && args.Parameters.Count > 0)
             {
-                MAC.config.muteAllReason = "";
-                for (int i = 0; i < args.Parameters.Count; i++)
+                string phaseName = "";
+                Main.moonPhase = phase;
+
+                #region PhaseName
+                switch (phase)
                 {
-
-                    MAC.config.muteAllReason += args.Parameters[i];
-                    if (i < args.Parameters.Count - 1)
-                    {
-
-                        MAC.config.muteAllReason += " ";
-
-                    }
-
+                    case 0:
+                        phaseName = "full";
+                        break;
+                    case 1:
+                        phaseName = "3/4";
+                        break;
+                    case 2:
+                        phaseName = "1/2";
+                        break;
+                    case 3:
+                        phaseName = "1/4";
+                        break;
+                    case 4:
+                        phaseName = "new";
+                        break;
+                    case 5:
+                        phaseName = "1/4";
+                        break;
+                    case 6:
+                        phaseName = "1/2";
+                        break;
+                    case 7:
+                        phaseName = "3/4";
+                        break;
                 }
-                if (MAC.config.muteAllReason == "")
-                {
+                #endregion
 
-                    MAC.config.muteAllReason = MAC.config.defaultMuteAllReason;
+                TSPlayer.All.SendInfoMessage("Moon phase set to {0}.", phaseName);
+            }
+            else
+                args.Player.SendErrorMessage("Invalid usage! Proper usage: /moon [0-7]");
+        }
+        #endregion
 
-                }
-                TSPlayer.All.SendInfoMessage(args.Player.Name + " has muted everyone.");
-                args.Player.SendSuccessMessage("You have muted everyone without the mute permission. " + 
-                    "They will remain muted until you use /muteall again.");
+        #region Reload
+        public static void ReloadMore(CommandArgs args)
+        {
+            Utils.SetUpConfig();
+            args.Player.SendInfoMessage("Reloaded MoreAdminCommands config file");
+        }
+        #endregion
+
+
+        //Spawning
+        #region SpawnGroup
+        public static void SpawnGroup(CommandArgs args)
+        {
+            if (args.Parameters.Count != 1)
+            {
+                args.Player.SendErrorMessage("Invalid syntax: /spawngroup <npcGroupName>");
             }
             else
             {
-                foreach (Mplayer player in MAC.Players)
+                string nGroup = args.Parameters[0];
+                Utils.getSpawnGroup(nGroup, args.Player);
+            }
+        }
+        #endregion
+
+        #region SpawnMobPlayer
+        public static void SpawnMobPlayer(CommandArgs args)
+        {
+            if (args.Parameters.Count < 1 || args.Parameters.Count > 3)
+            {
+                args.Player.SendMessage("Invalid syntax! Proper syntax: /smp <mob name/id> [amount] [username]", Color.Red);
+                return;
+            }
+            if (args.Parameters[0].Length == 0)
+            {
+                args.Player.SendMessage("Missing mob name/id", Color.Red);
+                return;
+            }
+            int amount = 1;
+            if (args.Parameters.Count == 3 && !int.TryParse(args.Parameters[1], out amount))
+            {
+                args.Player.SendMessage("Invalid syntax! Proper syntax: /spawnmob <mob name/id> [amount] [username]", Color.Red);
+                return;
+            }
+
+            amount = Math.Min(amount, Main.maxNPCs);
+
+            var npcs = TShockAPI.TShock.Utils.GetNPCByIdOrName(args.Parameters[0]);
+            var players = TShockAPI.TShock.Utils.FindPlayer(args.Parameters[2]);
+            if (players.Count == 0)
+            {
+                args.Player.SendMessage("Invalid player!", Color.Red);
+            }
+            else if (players.Count > 1)
+            {
+                args.Player.SendMessage("More than one player matched!", Color.Red);
+            }
+            else if (npcs.Count == 0)
+            {
+                args.Player.SendMessage("Invalid mob type!", Color.Red);
+            }
+            else if (npcs.Count > 1)
+            {
+                args.Player.SendMessage(string.Format("More than one ({0}) mob matched!", npcs.Count), Color.Red);
+            }
+            else
+            {
+                var npc = npcs[0];
+                if (npc.type >= 1 && npc.type < Main.maxNPCTypes)
                 {
-                    player.muted = false;
+                    TSPlayer.Server.SpawnNPC(npc.type, npc.name, amount, players[0].TileX, players[0].TileY, 50, 20);
+                    TSPlayer.All.SendInfoMessage(string.Format("{0} was spawned {1} time(s) nearby {2}.", npc.name, amount, players[0].Name));
                 }
-                TSPlayer.All.SendInfoMessage(args.Player.Name + " has unmuted everyone, except perhaps those muted before everyone was muted.");
+                else
+                    args.Player.SendMessage("Invalid mob type!", Color.Red);
             }
         }
         #endregion
@@ -706,127 +667,45 @@ namespace MoreAdminCommands
         }
         #endregion
 
-        #region ButcherNear
-        public static void ButcherNear(CommandArgs args)
+
+        //Player management
+        #region MuteAll
+        public static void MuteAll(CommandArgs args)
         {
 
-            int nearby = 50;
-            if (args.Parameters.Count > 0)
+            MAC.muteAll = !MAC.muteAll;
+            if (MAC.muteAll)
             {
-                try
+                MAC.config.muteAllReason = "";
+                for (int i = 0; i < args.Parameters.Count; i++)
                 {
-                    nearby = Convert.ToInt32(args.Parameters[0]);
-                }
-                catch { args.Player.SendErrorMessage("Improper Syntax. Proper Syntax: /butchernear [distance]"); return; }
-            }
-            int killcount = 0;
-            for (int i = 0; i < Main.npc.Length; i++)
-            {
-                //if ((Main.npc[i].active) && (MAC.distance(new Vector2(Main.item[i].position.X, Main.item[i].position.Y), new Point((int)Main.player[args.Player.Index].position.X, (int)Main.player[args.Player.Index].position.Y)) < nearby * 16))
-                //{
-                //    TSPlayer.Server.StrikeNPC(i, 99999, 90f, 1);
-                //    killcount++;
-                //}
 
-                if ((Main.npc[i].active && 
-                    getDistance(new Vector2(args.Player.X, args.Player.Y), Main.npc[i].position) < nearby))
-                {
-                    TSPlayer.Server.StrikeNPC(i, Main.npc[i].lifeMax + 1, 1f, 1);
-                    killcount++;
-                }
-            }
-            args.Player.SendInfoMessage(string.Format("Killed {0} NPC(s) within a radius of " + nearby.ToString() + " blocks.", killcount));
-            TSPlayer.All.SendInfoMessage(string.Format("{0} killed {1} NPC(s)", args.Player.Name, killcount));
-        }
-        #endregion
-
-        public static int getDistance(Vector2 player, Vector2 mob)
-        {
-            return (int)((player.X - mob.X) + (player.Y - mob.Y));
-        }
-
-        #region ButcherAll
-        public static void ButcherAll(CommandArgs args)
-        {
-            int killcount = 0;
-            for (int i = 0; i < Main.maxNPCs; i++)
-            {
-                if (Main.npc[i].active)
-                {
-                    TSPlayer.Server.StrikeNPC(i, 99999, 90f, 1);
-                    killcount++;
-                }
-            }
-            TSPlayer.All.SendInfoMessage(string.Format("Killed {0} NPCs.", killcount));
-        }
-        #endregion
-
-        #region ButcherFriendly
-        public static void ButcherFriendly(CommandArgs args)
-        {
-            int killcount = 0;
-            for (int i = 0; i < Main.npc.Length; i++)
-            {
-                if (Main.npc[i].active && Main.npc[i].townNPC)
-                {
-                    TSPlayer.Server.StrikeNPC(i, 99999, 90f, 1);
-                    killcount++;
-                }
-            }
-            TSPlayer.All.SendInfoMessage(string.Format("Killed {0} friendly NPCs.", killcount));
-        }
-        #endregion
-
-        #region ButcherNPC
-        public static void ButcherNPC(CommandArgs args)
-        {
-
-            if (args.Parameters.Count < 1)
-            {
-                args.Player.SendMessage("Invalid syntax! Proper syntax: /butchernpc <npc name/id>", Color.Red);
-                return;
-            }
-
-            if (args.Parameters[0].Length == 0)
-            {
-                args.Player.SendMessage("Missing npc name/id", Color.Red);
-                return;
-            }
-
-            var npcs = TShockAPI.TShock.Utils.GetNPCByIdOrName(args.Parameters[0]);
-
-            if (npcs.Count == 0)
-            {
-                args.Player.SendMessage("Invalid npc type!", Color.Red);
-            }
-
-            else if (npcs.Count > 1)
-            {
-                TShock.Utils.SendMultipleMatchError(args.Player, npcs);
-            }
-
-            else
-            {
-                var npc = npcs[0];
-
-                if (npc.type >= 1 && npc.type < Main.maxNPCTypes)
-                {
-                    int killcount = 0;
-
-                    for (int i = 0; i < Main.npc.Length; i++)
+                    MAC.config.muteAllReason += args.Parameters[i];
+                    if (i < args.Parameters.Count - 1)
                     {
-                        if (Main.npc[i].active && Main.npc[i].type == npc.type)
-                        {
-                            TSPlayer.Server.StrikeNPC(i, 99999, 90f, 1);
-                            killcount++;
-                        }
+
+                        MAC.config.muteAllReason += " ";
+
                     }
 
-                    TSPlayer.All.SendInfoMessage(string.Format("Killed {0} " + npc.name + "(s).", killcount));
                 }
+                if (MAC.config.muteAllReason == "")
+                {
 
-                else
-                    args.Player.SendMessage("Invalid npc type!", Color.Red);
+                    MAC.config.muteAllReason = MAC.config.defaultMuteAllReason;
+
+                }
+                TSPlayer.All.SendInfoMessage(args.Player.Name + " has muted everyone.");
+                args.Player.SendSuccessMessage("You have muted everyone without the mute permission. " + 
+                    "They will remain muted until you use /muteall again.");
+            }
+            else
+            {
+                foreach (Mplayer player in MAC.Players)
+                {
+                    player.muted = false;
+                }
+                TSPlayer.All.SendInfoMessage(args.Player.Name + " has unmuted everyone, except perhaps those muted before everyone was muted.");
             }
         }
         #endregion
@@ -842,7 +721,7 @@ namespace MoreAdminCommands
 
                 if (tply.Count() > 1)
                 {
-                    args.Player.SendMessage("More than 1 player matched.", Color.Red);
+                    TShock.Utils.SendMultipleMatchError(args.Player, tply);
                 }
 
                 else if (tply.Count() < 1)
@@ -853,7 +732,7 @@ namespace MoreAdminCommands
                         List<SqlValue> where = new List<SqlValue>();
                         where.Add(new SqlValue("Name", "'" + args.Parameters[0].ToLower() + "'"));
                         MAC.SQLWriter.DeleteRow("muteList", where);
-                        args.Player.SendInfoMessage(args.Parameters[0] + 
+                        args.Player.SendInfoMessage(args.Parameters[0] +
                             " has been successfully been removed from the perma-mute list.");
                     }
                     else
@@ -867,7 +746,7 @@ namespace MoreAdminCommands
                     var player = Utils.GetPlayers(tply[0].Index);
                     player.muteTime = -1;
                     string str = tply[0].Name.ToLower();
-                    int index = MAC.SearchTable(MAC.SQLEditor.ReadColumn("muteList", "Name", new List<SqlValue>()), str);
+                    int index = Utils.SearchTable(MAC.SQLEditor.ReadColumn("muteList", "Name", new List<SqlValue>()), str);
 
                     if (index == -1)
                     {
@@ -899,11 +778,151 @@ namespace MoreAdminCommands
         }
         #endregion
 
-        #region Reload
-        public static void ReloadMore(CommandArgs args)
+        #region ViewAll
+        public static void ViewAll(CommandArgs args)
         {
-            Utils.SetUpConfig();
-            args.Player.SendInfoMessage("Reloaded MoreAdminCommands config file");
+            var player = Utils.GetPlayers(args.Player.Index);
+
+            player.viewAll = !player.viewAll;
+
+            if (player.viewAll)
+                args.Player.SendInfoMessage("View All mode has been turned on.");
+
+            else
+            {
+                args.Player.SetTeam(Main.player[args.Player.Index].team);
+                foreach (TSPlayer tply in TShock.Players)
+                {
+                    try
+                    {
+                        NetMessage.SendData((int)PacketTypes.PlayerTeam, args.Player.Index, -1, "", tply.Index);
+                    }
+                    catch (Exception) { }
+                }
+                args.Player.SendInfoMessage("View All mode has been turned off.");
+            }
+        }
+        #endregion
+
+
+        //Butchering
+        #region ButcherNear
+        public static void ButcherNear(CommandArgs args)
+        {
+
+            int nearby = 50;
+            if (args.Parameters.Count > 0)
+            {
+                try
+                {
+                    nearby = Convert.ToInt32(args.Parameters[0]);
+                }
+                catch { args.Player.SendErrorMessage("Improper Syntax. Proper Syntax: /butchernear [distance]"); return; }
+            }
+            int killcount = 0;
+            for (int i = 0; i < Main.npc.Length; i++)
+            {
+                if ((Main.npc[i].active && 
+                    Utils.getDistance(new Vector2(args.Player.X, args.Player.Y), Main.npc[i].position) < nearby))
+                {
+                    TSPlayer.Server.StrikeNPC(i, Main.npc[i].lifeMax + 1, 1f, 1);
+                    killcount++;
+                }
+            }
+            args.Player.SendInfoMessage(string.Format("Killed {0} NPC(s) within a radius of " + nearby.ToString() + " blocks.", killcount));
+            TSPlayer.All.SendInfoMessage(string.Format("{0} killed {1} NPC(s)", args.Player.Name, killcount));
+        }
+        #endregion
+
+        #region ButcherAll
+        public static void ButcherAll(CommandArgs args)
+        {
+            int killcount = 0;
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                if (Main.npc[i].active)
+                {
+                    TSPlayer.Server.StrikeNPC(i, 99999, 90f, 1);
+                    killcount++;
+                }
+            }
+            TSPlayer.All.SendInfoMessage(string.Format("{0} killed {1} NPCs.", args.Player.Name, killcount));
+        }
+        #endregion
+
+        #region ButcherFriendly
+        public static void ButcherFriendly(CommandArgs args)
+        {
+            int killcount = 0;
+            for (int i = 0; i < Main.npc.Length; i++)
+            {
+                if (Main.npc[i].active && Main.npc[i].townNPC)
+                {
+                    TSPlayer.Server.StrikeNPC(i, 99999, 90f, 1);
+                    killcount++;
+                }
+            }
+            args.Player.SendInfoMessage(string.Format("Killed {0} friendly NPCs.", killcount));
+            TSPlayer.All.SendInfoMessage(string.Format("{0} killed {1} friendly NPCs", args.Player.Name, killcount));
+        }
+        #endregion
+
+        #region ButcherNPC
+        public static void ButcherNPC(CommandArgs args)
+        {
+
+            if (args.Parameters.Count < 1)
+            {
+                args.Player.SendMessage("Invalid syntax! Proper syntax: /butchernpc <npc name/id>", Color.Red);
+                return;
+            }
+
+            if (args.Parameters[0].Length == 0)
+            {
+                args.Player.SendMessage("Missing npc name/id", Color.Red);
+                return;
+            }
+
+            var npcs = TShockAPI.TShock.Utils.GetNPCByIdOrName(args.Parameters[0]);
+
+            if (npcs.Count == 0)
+            {
+                args.Player.SendMessage("Invalid npc type!", Color.Red);
+            }
+
+            else if (npcs.Count > 1)
+            {
+                List<string> npcNames = new List<string>();
+                foreach (NPC npc in npcs)
+                    npcNames.Add(npc.name);
+
+                TShock.Utils.SendMultipleMatchError(args.Player, npcNames);
+            }
+
+            else
+            {
+                var npc = npcs[0];
+
+                if (npc.type >= 1 && npc.type < Main.maxNPCTypes)
+                {
+                    int killcount = 0;
+
+                    for (int i = 0; i < Main.npc.Length; i++)
+                    {
+                        if (Main.npc[i].active && Main.npc[i].type == npc.type)
+                        {
+                            TSPlayer.Server.StrikeNPC(i, 99999, 90f, 1);
+                            killcount++;
+                        }
+                    }
+
+                    args.Player.SendInfoMessage(string.Format("Killed {0} " + npc.name + "(s).", killcount));
+                    TSPlayer.All.SendInfoMessage(string.Format("{0} {1}(s) were killed", npc.name, killcount));
+                }
+
+                else
+                    args.Player.SendMessage("Invalid npc type!", Color.Red);
+            }
         }
         #endregion
     }

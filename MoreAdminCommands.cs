@@ -58,7 +58,7 @@ namespace MoreAdminCommands
             get { return Assembly.GetExecutingAssembly().GetName().Version; }
         }
 
-        #region Initialize Dispose
+        #region Initialize
         public override void Initialize()
         {
             var Hook = ServerApi.Hooks;
@@ -71,7 +71,9 @@ namespace MoreAdminCommands
             Hook.ServerLeave.Register(this, OnLeave);
             Hook.NetGetData.Register(this, OnGetData);
         }
+        #endregion
 
+        #region Dispose
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -499,7 +501,7 @@ namespace MoreAdminCommands
         public void OnChat(ServerChatEventArgs args)
         {
             var Mplayer = Utils.GetPlayers(args.Who);
-            if (findIfPlayingCommand(args.Text) && !TShock.Players[args.Who].Group.HasPermission("ghostmode"))
+            if (Utils.findIfPlayingCommand(args.Text) && !TShock.Players[args.Who].Group.HasPermission("ghostmode"))
             {
                 string sb = "";
                 foreach (TSPlayer player in TShock.Players)
@@ -518,7 +520,8 @@ namespace MoreAdminCommands
                 args.Handled = true;
             }
 
-            if (((Mplayer.muted) && (findIfMeCommand(args.Text))) || ((muteAll) && (!TShock.Players[args.Who].Group.HasPermission("mute"))))
+            if (((Mplayer.muted) && (Utils.findIfMeCommand(args.Text))) ||
+                ((muteAll) && (!TShock.Players[args.Who].Group.HasPermission("mute"))))
             {
                 TShock.Players[args.Who].SendMessage("You cannot use the /me command, you are muted.", Color.Red);
                 args.Handled = true;
@@ -529,7 +532,7 @@ namespace MoreAdminCommands
             {
                 string tempText = args.Text;
                 tempText = tempText.Remove(0, 1);
-                parseParameters(tempText);
+                Utils.parseParameters(tempText);
             }
 
             if ((Mplayer.muted || muteAll) && !TShock.Players[args.Who].Group.HasPermission("mute"))
@@ -559,155 +562,6 @@ namespace MoreAdminCommands
                 }
                 args.Handled = true;
             }
-        }
-        #endregion
-
-        #region Stuff
-        //public static int distance(Vector2 point1, Point point2)
-        //{
-        //    return (Convert.ToInt32(Math.Sqrt(Math.Pow(point1.X - point2.X, 2)
-        //        + Math.Pow(point1.Y - point2.Y, 2))));
-        //}
-
-        public static bool findIfPlayingCommand(string text)
-        {
-
-            if (text.StartsWith("/playing"))
-            {
-
-                if (text.Length == 8)
-                    return true;
-                else if (text[8] == ' ')
-                    return true;
-                else
-                    return false;
-
-            }
-            else if (text.StartsWith("/who"))
-            {
-
-                if (text.Length == 4)
-                    return true;
-                else if (text[4] == ' ')
-                    return true;
-                else
-                    return false;
-
-            }
-            else
-                return false;
-
-        }
-        public static bool findIfMeCommand(string text)
-        {
-
-            if (text.StartsWith("/me"))
-            {
-
-                if (text.Length == 3)
-                    return true;
-                else if (text[3] == ' ')
-                    return true;
-                else
-                    return false;
-
-            }
-            else
-                return false;
-
-        }
-        public static List<String> parseParameters(string str) {
-
-            var ret = new List<string>();
-            string sb = "";
-            bool instr = false;
-            for (int i = 0; i < str.Length; i++)
-            {
-                char c = str[i];
-
-                if (instr)
-                {
-                    if (c == '\\')
-                    {
-                        if (i + 1 >= str.Length)
-                            break;
-                        c = GetEscape(str[++i]);
-                    }
-                    else if (c == '"')
-                    {
-                        ret.Add(sb);
-                        sb = "";
-                        instr = false;
-                        continue;
-                    }
-                    sb += c;
-                }
-                else
-                {
-                    if (IsWhiteSpace(c))
-                    {
-                        if (sb.Length > 0)
-                        {
-                            ret.Add(sb.ToString());
-                            sb = "";
-                        }
-                    }
-                    else if (c == '"')
-                    {
-                        if (sb.Length > 0)
-                        {
-                            ret.Add(sb.ToString());
-                            sb = "";
-                        }
-                        instr = true;
-                    }
-                    else
-                    {
-                        sb += c;
-                    }
-                }
-            }
-            if (sb.Length > 0)
-                ret.Add(sb.ToString());
-
-            return ret;
-
-        }
-        private static char GetEscape(char c)
-        {
-            switch (c)
-            {
-                case '\\':
-                    return '\\';
-                case '"':
-                    return '"';
-                case 't':
-                    return '\t';
-                default:
-                    return c;
-            }
-        }
-        private static bool IsWhiteSpace(char c)
-        {
-            return c == ' ' || c == '\t' || c == '\n';
-        }
-        #endregion
-
-        #region SearchTable
-        public static int SearchTable(List<object> Table, string Query)
-        {
-            for (int i = 0; i < Table.Count; i++)
-            {
-                try
-                {
-                    if (Query == Table[i].ToString())
-                    {
-                        return (i);
-                    }
-                }
-                catch { }
-            }
-            return (-1);
         }
         #endregion
     }
