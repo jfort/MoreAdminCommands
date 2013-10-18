@@ -45,7 +45,7 @@ namespace MoreAdminCommands
 
         public override string Author
         {
-            get { return "Created by DaGamesta"; }
+            get { return "Created by DaGamesta, Maintained by WhiteX & aMoka"; }
         }
 
         public override string Description
@@ -67,7 +67,7 @@ namespace MoreAdminCommands
             Hook.GameUpdate.Register(this, OnUpdate);
             Hook.ServerChat.Register(this, OnChat);
             Hook.NetSendData.Register(this, OnSendData);
-            Hook.ServerJoin.Register(this, OnJoin);
+            Hook.NetGreetPlayer.Register(this, OnJoin);
             Hook.ServerLeave.Register(this, OnLeave);
             Hook.NetGetData.Register(this, OnGetData);
         }
@@ -82,7 +82,7 @@ namespace MoreAdminCommands
                 Hook.GameUpdate.Deregister(this, OnUpdate);
                 Hook.ServerChat.Deregister(this, OnChat);
                 Hook.NetSendData.Deregister(this, OnSendData);
-                Hook.ServerJoin.Deregister(this, OnJoin);
+                Hook.NetGreetPlayer.Deregister(this, OnJoin);
                 Hook.ServerLeave.Deregister(this, OnLeave);
                 Hook.NetGetData.Deregister(this, OnGetData);
             }
@@ -136,7 +136,7 @@ namespace MoreAdminCommands
         #endregion
 
         #region OnJoin
-        public void OnJoin(JoinEventArgs args)
+        public void OnJoin(GreetPlayerEventArgs args)
         {
             var player = new TSPlayer(args.Who);
             var readTableIP = SQLEditor.ReadColumn("muteList", "IP", new List<SqlValue>());
@@ -176,6 +176,8 @@ namespace MoreAdminCommands
             player.accessGreen = false;
             player.accessYellow = false;
             player.autoKill = false;
+
+            Players.RemoveAll(pl => pl.Index == args.Who);
         }
         #endregion
 
@@ -198,7 +200,7 @@ namespace MoreAdminCommands
                     {
                         if (HP <= MaxHP / 2)
                         {
-                            player.TSPlayer.Heal(MaxHP - HP);
+                            player.TSPlayer.Heal(500);
                             player.TSPlayer.SendSuccessMessage("You just got healed!");
                         }
                     }
