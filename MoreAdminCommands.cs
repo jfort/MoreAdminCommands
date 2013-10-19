@@ -37,6 +37,8 @@ namespace MoreAdminCommands
         public static bool cansend = false;
         public static bool freezeDayTime = true;
         public static bool muteAll = false;
+        public static TSPlayer ttplayer;
+        
 
         public override string Name
         {
@@ -133,6 +135,7 @@ namespace MoreAdminCommands
             Commands.ChatCommands.Add(new Command("mac.reload", Cmds.ReloadMore, "reloadmore"));
             Commands.ChatCommands.Add(new Command("mac.freeze", Cmds.FreezeTime, "freezetime", "ft"));
             Commands.ChatCommands.Add(new Command(Cmds.TeamUnlock, "teamunlock"));
+            Commands.ChatCommands.Add(new Command("mac.permabuff", Cmds.Permabuff, "permabuff", "pb"));
             #endregion
 
             Utils.SetUpConfig();
@@ -357,7 +360,7 @@ namespace MoreAdminCommands
                                             {
                                                 e.Handled = true;
                                                 TShock.Players[ply].SendMessage("This team is locked, use /teamunlock red [password] to access it.", Color.Red);
-                                                TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                                TShock.Players[ply].SetTeam(0);
                                             }
                                         }
                                         break;
@@ -369,7 +372,7 @@ namespace MoreAdminCommands
                                             {
                                                 e.Handled = true;
                                                 TShock.Players[ply].SendMessage("This team is locked, use /teamunlock green [password] to access it.", Color.Red);
-                                                TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                                TShock.Players[ply].SetTeam(0);
                                             }
                                         }
                                         break;
@@ -381,7 +384,7 @@ namespace MoreAdminCommands
                                             {
                                                 e.Handled = true;
                                                 TShock.Players[ply].SendMessage("This team is locked, use /teamunlock blue [password] to access it.", Color.Red);
-                                                TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                                TShock.Players[ply].SetTeam(0);
                                             }
                                         }
                                         break;
@@ -393,7 +396,7 @@ namespace MoreAdminCommands
                                             {
                                                 e.Handled = true;
                                                 TShock.Players[ply].SendMessage("This team is locked, use /teamunlock yellow [password] to access it.", Color.Red);
-                                                TShock.Players[ply].SetTeam(TShock.Players[ply].Team);
+                                                TShock.Players[ply].SetTeam(0);
                                             }
                                         }
                                         break;
@@ -529,6 +532,14 @@ namespace MoreAdminCommands
 
                                 player.TSPlayer.SendSuccessMessage("Your mute has run out, and you're free to talk again");
                             }
+                        }
+                    }
+
+                    if (player.isPermabuff)
+                    {
+                        foreach (int activeBuff in player.TSPlayer.TPlayer.buffType)
+                        {
+                            player.TSPlayer.SetBuff(activeBuff, Int16.MaxValue);
                         }
                     }
                 }

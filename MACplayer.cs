@@ -20,6 +20,7 @@ namespace MoreAdminCommands
         public bool accessGreen;
         public bool accessYellow;
         public bool autoKill;
+        public bool isPermabuff;
 
         public string name { get { return Main.player[Index].name; } }
         public TSPlayer TSPlayer { get { return TShock.Players[Index]; } }

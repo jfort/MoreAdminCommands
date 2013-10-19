@@ -546,6 +546,62 @@ namespace MoreAdminCommands
         }
         #endregion
 
+        #region Permabuff
+        public static void Permabuff(CommandArgs args)
+        {
+            if (args.Parameters.Count == 0)
+            {
+                var player = Utils.GetPlayers(args.Player.Index);
+                player.isPermabuff = !player.isPermabuff;
+
+                if (player.isPermabuff)
+                {
+                    args.Player.SendSuccessMessage("Permabuffs are now on.");
+                }
+                else
+                {
+                    args.Player.SendSuccessMessage("Permabuffs are now off.");
+                }
+            }
+            else
+            {
+                string str = args.Parameters[0];
+
+                var findPlayers = TShockAPI.TShock.Utils.FindPlayer(str);
+
+                if (findPlayers.Count > 1)
+                {
+                    args.Player.SendErrorMessage("Player does not exist.");
+                }
+
+                else if (findPlayers.Count < 1)
+                {
+                    args.Player.SendErrorMessage(findPlayers.Count + " players matched.");
+                }
+
+                else
+                {
+                    var player = Utils.GetPlayers(args.Parameters[0]);
+                    TShockAPI.TSPlayer ply = findPlayers[0];
+
+                    player.isPermabuff = !player.isPermabuff;
+
+                    if (player.isPermabuff)
+                    {
+                        args.Player.SendInfoMessage("You have activated permabuffs for " + ply.Name + ".");
+                        ply.SendInfoMessage(args.Player.Name + " has activated permabuffs on you");
+                    }
+
+                    else
+                    {
+                        args.Player.SendInfoMessage("You have deactivated permabuffs for " + ply.Name + ".");
+                        ply.SendInfoMessage(args.Player.Name + " has deactivated permabuffs on you");
+                    }
+                }
+            }
+        }
+        #endregion
+
 
         //Spawning
         #region SpawnGroup
