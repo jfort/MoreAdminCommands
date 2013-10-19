@@ -37,8 +37,6 @@ namespace MoreAdminCommands
         public static bool cansend = false;
         public static bool freezeDayTime = true;
         public static bool muteAll = false;
-        public static TSPlayer ttplayer;
-        
 
         public override string Name
         {
