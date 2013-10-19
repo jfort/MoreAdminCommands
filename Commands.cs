@@ -115,9 +115,15 @@ namespace MoreAdminCommands
             if (args.Parameters.Count > 0)
             {
                 var plyList = TShockAPI.TShock.Utils.FindPlayer(args.Parameters[0]);
+
                 if (plyList.Count > 1)
                 {
-                    args.Player.SendErrorMessage("Player does not exist.");
+                    List<string> foundPlayers = new List<string>();
+                    foreach (TSPlayer player in plyList)
+                    {
+                        foundPlayers.Add(player.Name);
+                    }
+                    TShock.Utils.SendMultipleMatchError(args.Player, foundPlayers);
                 }
                 else if (plyList.Count < 1)
                 {
@@ -130,17 +136,11 @@ namespace MoreAdminCommands
                         var player = Utils.GetPlayers(plyList[0].Index);
 
                         player.autoKill = !player.autoKill;
-                        if (player.autoKill)
-                        {
-                            args.Player.SendInfoMessage(plyList[0].Name + " is now being auto-killed.");
-                            plyList[0].SendInfoMessage("You are now being auto-killed. " + 
-                                " Beg for mercy, that you may be spared.");
-                        }
-                        else
-                        {
-                            args.Player.SendInfoMessage(plyList[0].Name + " is no longer being auto-killed.");
-                            plyList[0].SendInfoMessage("You have been pardoned.");
-                        }
+
+                        args.Player.SendSuccessMessage(string.Format("{0}abled auto-killed on {1}",
+                            player.autoKill ? "En" : "Dis", player.name));
+                        player.TSPlayer.SendInfoMessage(string.Format("You are {0} being auto-killed",
+                            player.autoKill ? "now" : "no longer"));
                     }
                     else
                     {
@@ -150,7 +150,7 @@ namespace MoreAdminCommands
             }
             else
             {
-                args.Player.SendErrorMessage("Invalid syntax.  Proper Syntax: /autokill playername");
+                args.Player.SendErrorMessage("Invalid syntax: /autokill <playerName>");
             }
         }
         #endregion
@@ -354,14 +354,7 @@ namespace MoreAdminCommands
                 var player = Utils.GetPlayers(args.Player.Index);
                 player.isHeal = !player.isHeal;
 
-                if (player.isHeal)
-                {
-                    args.Player.SendSuccessMessage("Auto Heal Mode is now on.");
-                }
-                else
-                {
-                    args.Player.SendSuccessMessage("Auto Heal Mode is now off.");
-                }
+                args.Player.SendSuccessMessage("Autoheal is now " + (player.isHeal ? "on" : "off"));
             }
             else
             {
@@ -371,7 +364,13 @@ namespace MoreAdminCommands
 
                 if (findPlayers.Count > 1)
                 {
-                    args.Player.SendMessage("Player does not exist.", Color.Red);
+                    List<string> foundPlayers = new List<string>();
+                    foreach (TSPlayer player in findPlayers)
+                    {
+                        foundPlayers.Add(player.Name);
+                    }
+
+                    TShock.Utils.SendMultipleMatchError(args.Player, foundPlayers);
                 }
 
                 else if (findPlayers.Count < 1)
@@ -414,17 +413,11 @@ namespace MoreAdminCommands
 
                 var player = Utils.GetPlayers(args.Player.Index);
 
-                if (!player.isGhost)
-                {
-                    args.Player.SendSuccessMessage("Ghost Mode activated!");
-                    TSPlayer.All.SendInfoMessage(args.Player.Name + " left", Color.Yellow);
-                }
+                args.Player.SendSuccessMessage(string.Format("Ghost mode {0}tivated"),
+                    player.isGhost ? "ac" : "deac");
+                TSPlayer.All.SendInfoMessage(string.Format("{0} {1}"),
+                    args.Player.Name, player.isGhost ? "left" : "has joined.");
 
-                else
-                {
-                    args.Player.SendSuccessMessage("Ghost Mode deactivated!");
-                    TSPlayer.All.SendInfoMessage(args.Player.Name + " has joined.", Color.Yellow);
-                }
 
                 player.isGhost = !player.isGhost;
                 args.Player.TPlayer.position.X = 0;
@@ -452,7 +445,12 @@ namespace MoreAdminCommands
 
                 if (playerList.Count > 1)
                 {
-                    args.Player.SendErrorMessage("Player does not exist.");
+                    List<string> foundPlayers = new List<string>();
+                    foreach (TSPlayer player in playerList)
+                    {
+                        foundPlayers.Add(player.Name);
+                    }
+                    TShock.Utils.SendMultipleMatchError(args.Player, foundPlayers);
                 }
 
                 else if (playerList.Count < 1)
@@ -462,23 +460,18 @@ namespace MoreAdminCommands
 
                 else
                 {
-                    TShockAPI.TSPlayer Player = playerList[0];
+                    TSPlayer Player = playerList[0];
                     int tempTeam = Player.TPlayer.team;
                     Player.TPlayer.team = 0;
                     NetMessage.SendData(45, -1, -1, "", Player.Index);
                     Player.TPlayer.team = tempTeam;
                     var Mplayer = Utils.GetPlayers(Player.Index);
 
-                    if (!Mplayer.isGhost)
-                    {
-                        args.Player.SendSuccessMessage("Ghost mode activated for " + Player.Name + ".");
-                        Player.SendInfoMessage(Player.Name + " has activated ghost mode for you");
-                    }
-                    else
-                    {
-                        args.Player.SendSuccessMessage("Ghost Mode deactivated for " + Player.Name + ".");
-                        Player.SendInfoMessage(Player.Name + " has deactivated ghost mode for you");
-                    }
+                    args.Player.SendSuccessMessage(string.Format("Ghost mode {0}tivated for {1}.",
+                        Mplayer.isGhost ? "ac" : "deac", Mplayer.name));
+
+                    Player.SendInfoMessage(string.Format("{0} has {1}tivated ghost mode on you",
+                        args.Player.Name, Mplayer.isGhost ? "ac" : "deac"));
 
                     Mplayer.isGhost = !Mplayer.isGhost;
                     Player.TPlayer.position.X = 0;
@@ -545,7 +538,9 @@ namespace MoreAdminCommands
             args.Player.SendInfoMessage("Reloaded MoreAdminCommands config file");
         }
         #endregion
+        
 
+        //Buffs
         #region Permabuff
         public static void Permabuff(CommandArgs args)
         {
@@ -554,14 +549,7 @@ namespace MoreAdminCommands
                 var player = Utils.GetPlayers(args.Player.Index);
                 player.isPermabuff = !player.isPermabuff;
 
-                if (player.isPermabuff)
-                {
-                    args.Player.SendSuccessMessage("Permabuffs are now on.");
-                }
-                else
-                {
-                    args.Player.SendSuccessMessage("Permabuffs are now off.");
-                }
+                args.Player.SendSuccessMessage("Permabuffs are now " + (player.isPermabuff ? "on" : "off"));
             }
             else
             {
@@ -571,7 +559,13 @@ namespace MoreAdminCommands
 
                 if (findPlayers.Count > 1)
                 {
-                    args.Player.SendErrorMessage("Player does not exist.");
+                    List<string> foundPlayers = new List<string>();
+                    foreach (TSPlayer player in findPlayers)
+                    {
+                        foundPlayers.Add(player.Name);
+                    }
+
+                    TShock.Utils.SendMultipleMatchError(args.Player, foundPlayers);
                 }
 
                 else if (findPlayers.Count < 1)
@@ -586,17 +580,60 @@ namespace MoreAdminCommands
 
                     player.isPermabuff = !player.isPermabuff;
 
-                    if (player.isPermabuff)
+                    args.Player.SendSuccessMessage(string.Format("You have {0}tivated permabuffs on {1}.",
+                        (player.isPermabuff ? "ac" : "deac"), ply.Name));
+
+                    ply.SendInfoMessage(string.Format("{0} has {1}tivated permabuffs on you",
+                        args.Player.Name, (player.isPermabuff ? "ac" : "deac")));
+                }
+            }
+        }
+        #endregion
+
+        #region PermaDebuff
+        public static void permDebuff(CommandArgs args)
+        {
+            if (args.Parameters.Count == 0)
+            {
+                var player = Utils.GetPlayers(args.Player.Index);
+
+                player.isPermaDebuff = !player.isPermaDebuff;
+
+                args.Player.SendSuccessMessage("Permanent debuffs are now " + (player.isPermaDebuff ? "on" : "off"));
+            }
+            else
+            {
+                string str = args.Parameters[0];
+
+                var findPlayers = TShockAPI.TShock.Utils.FindPlayer(str);
+
+                if (findPlayers.Count > 1)
+                {
+                    List<string> foundPlayers = new List<string>();
+                    foreach (TSPlayer player in findPlayers)
                     {
-                        args.Player.SendInfoMessage("You have activated permabuffs for " + ply.Name + ".");
-                        ply.SendInfoMessage(args.Player.Name + " has activated permabuffs on you");
+                        foundPlayers.Add(player.Name);
                     }
 
-                    else
-                    {
-                        args.Player.SendInfoMessage("You have deactivated permabuffs for " + ply.Name + ".");
-                        ply.SendInfoMessage(args.Player.Name + " has deactivated permabuffs on you");
-                    }
+                    TShock.Utils.SendMultipleMatchError(args.Player, foundPlayers);
+                }
+
+                else if (findPlayers.Count < 1)
+                {
+                    args.Player.SendErrorMessage(findPlayers.Count + " players matched.");
+                }
+
+                else
+                {
+                    var player = Utils.GetPlayers(args.Parameters[0]);
+
+                    player.isPermaDebuff = !player.isPermaDebuff;
+
+                    args.Player.SendSuccessMessage(string.Format("You have {0}tivated permanent debuffs on {1}!",
+                        player.isPermaDebuff ? "ac" : "deac", player.name));
+
+                    player.TSPlayer.SendInfoMessage(string.Format("{0} has {1}tivated permament debuffs on you",
+                       args.Player, player.isPermaDebuff ? "ac" : "deac"));
                 }
             }
         }
@@ -735,22 +772,17 @@ namespace MoreAdminCommands
                 MAC.config.muteAllReason = "";
                 for (int i = 0; i < args.Parameters.Count; i++)
                 {
-
                     MAC.config.muteAllReason += args.Parameters[i];
                     if (i < args.Parameters.Count - 1)
                     {
-
                         MAC.config.muteAllReason += " ";
-
                     }
-
                 }
                 if (MAC.config.muteAllReason == "")
                 {
-
                     MAC.config.muteAllReason = MAC.config.defaultMuteAllReason;
-
                 }
+
                 TSPlayer.All.SendInfoMessage(args.Player.Name + " has muted everyone.");
                 args.Player.SendSuccessMessage("You have muted everyone without the mute permission. " + 
                     "They will remain muted until you use /muteall again.");
@@ -849,11 +881,7 @@ namespace MoreAdminCommands
                 args.Player.SetTeam(Main.player[args.Player.Index].team);
                 foreach (TSPlayer tply in TShock.Players)
                 {
-                    try
-                    {
-                        NetMessage.SendData((int)PacketTypes.PlayerTeam, args.Player.Index, -1, "", tply.Index);
-                    }
-                    catch (Exception) { }
+                    NetMessage.SendData((int)PacketTypes.PlayerTeam, args.Player.Index, -1, "", tply.Index);
                 }
                 args.Player.SendInfoMessage("View All mode has been turned off.");
             }

@@ -134,6 +134,7 @@ namespace MoreAdminCommands
             Commands.ChatCommands.Add(new Command("mac.freeze", Cmds.FreezeTime, "freezetime", "ft"));
             Commands.ChatCommands.Add(new Command(Cmds.TeamUnlock, "teamunlock"));
             Commands.ChatCommands.Add(new Command("mac.permabuff", Cmds.Permabuff, "permabuff", "pb"));
+            Commands.ChatCommands.Add(new Command("mac.permabuff", Cmds.permDebuff, "permadebuff", "pdb"));
             #endregion
 
             Utils.SetUpConfig();
@@ -174,16 +175,6 @@ namespace MoreAdminCommands
         private void OnLeave(LeaveEventArgs args)
         {
             var player = Utils.GetPlayers(args.Who);
-
-            player.isGhost = false;
-            player.isHeal = false;
-            player.muted = false;
-            player.viewAll = false;
-            player.accessRed = false;
-            player.accessBlue = false;
-            player.accessGreen = false;
-            player.accessYellow = false;
-            player.autoKill = false;
 
             Players.RemoveAll(pl => pl.Index == args.Who);
         }
@@ -537,7 +528,21 @@ namespace MoreAdminCommands
                     {
                         foreach (int activeBuff in player.TSPlayer.TPlayer.buffType)
                         {
-                            player.TSPlayer.SetBuff(activeBuff, Int16.MaxValue);
+                            if (!Main.debuff[activeBuff])
+                            {
+                                player.TSPlayer.SetBuff(activeBuff, Int16.MaxValue);
+                            }
+                        }
+                    }
+
+                    if (player.isPermaDebuff)
+                    {
+                        foreach (int activeBuff in player.TSPlayer.TPlayer.buffType)
+                        {
+                            if (Main.debuff[activeBuff])
+                            {
+                                player.TSPlayer.SetBuff(activeBuff, Int16.MaxValue);
+                            }
                         }
                     }
                 }
