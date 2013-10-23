@@ -415,8 +415,19 @@ namespace MoreAdminCommands
 
                 args.Player.SendSuccessMessage(string.Format("Ghost mode {0}tivated"),
                     player.isGhost ? "ac" : "deac");
-                TSPlayer.All.SendInfoMessage(string.Format("{0} {1}"),
-                    args.Player.Name, player.isGhost ? "left" : "has joined.");
+                if (args.Parameters.Count > 1)
+                {
+                    bool silent;
+
+                    if (bool.TryParse(args.Parameters[0], out silent))
+                    {
+                        if (!silent)
+                        {
+                            TSPlayer.All.SendInfoMessage(string.Format("{0} {1}"),
+                                args.Player.Name, player.isGhost ? "left" : "has joined.");
+                        }
+                    }
+                }
 
 
                 player.isGhost = !player.isGhost;

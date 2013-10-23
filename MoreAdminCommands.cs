@@ -117,7 +117,7 @@ namespace MoreAdminCommands
             Commands.ChatCommands.Add(new Command("mac.mute", Cmds.PermaMute, "permamute"));
             Commands.ChatCommands.Add(new Command("mac.mute", Cmds.MuteAll, "muteall"));
             Commands.ChatCommands.Add(new Command("mac.spawn", Cmds.SpawnMobPlayer, "spawnmobplayer", "smp"));
-            //Commands.ChatCommands.Add(new Command("mac.spawn", Cmds.SpawnGroup, "spawngroup", "sg"));
+            Commands.ChatCommands.Add(new Command("mac.spawn", Cmds.SpawnGroup, "spawngroup", "sg"));
             Commands.ChatCommands.Add(new Command("mac.spawn", Cmds.SpawnByMe, "spawnbyme", "sbm"));
             Commands.ChatCommands.Add(new Command("mac.search", Cmds.FindPerms, "findperm"));
             Commands.ChatCommands.Add(new Command("mac.search", Cmds.FindCommand, "findcommand", "findcmd"));
@@ -207,10 +207,6 @@ namespace MoreAdminCommands
                                     player.TSPlayer.SendSuccessMessage("You just got healed!");
                                 }
                             }
-                        }
-                        else
-                        {
-                            Log.ConsoleError("player is null");
                         }
                     }
                 }
@@ -396,8 +392,6 @@ namespace MoreAdminCommands
                                 Log.ConsoleError(x.ToString());
                             }
                         }
-                        else
-                            Log.ConsoleError("Player is null");
                     }
                 }
             }
