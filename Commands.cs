@@ -107,6 +107,70 @@ namespace MoreAdminCommands
         }
         #endregion
 
+        #region FindItem
+        public static void FindItem(CommandArgs args)
+        {
+            if (args.Parameters.Count < 1)
+            {
+                args.Player.SendErrorMessage("Invalid syntax: /fitem item name");
+            }
+            else
+            {
+                for (int i = 0; i < args.Parameters.Count; i++)
+                {
+                    var item = string.Join(" ", args.Parameters[i]);
+
+                    var itemMatches = TShock.Utils.GetItemByName(item);
+
+                    if (itemMatches.Count > 1)
+                    {
+                        List<string> items = new List<string>();
+                        itemMatches.ForEach(Item => items.Add(Item.name));
+
+                        TShock.Utils.SendMultipleMatchError(args.Player, items);
+                    }
+
+                    else if (itemMatches.Count == 1)
+                    {
+                        args.Player.SendSuccessMessage("One item matches your query: " + itemMatches[0]);
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region FindMob
+        public static void FindMob(CommandArgs args)
+        {
+            if (args.Parameters.Count < 1)
+            {
+                args.Player.SendErrorMessage("Invalid syntax: /fitem mob name");
+            }
+            else
+            {
+                for (int i = 0; i < args.Parameters.Count; i++)
+                {
+                    var item = string.Join(" ", args.Parameters[i]);
+
+                    var mobMatches = TShock.Utils.GetNPCByName(item);
+
+                    if (mobMatches.Count > 1)
+                    {
+                        List<string> mobs = new List<string>();
+                        mobMatches.ForEach(mob => mobs.Add(mob.name));
+
+                        TShock.Utils.SendMultipleMatchError(args.Player, mobs);
+                    }
+
+                    else if (mobMatches.Count == 1)
+                    {
+                        args.Player.SendSuccessMessage("One mob matches your query: " + mobMatches[0]);
+                    }
+                }
+            }
+        }
+        #endregion
+
 
         //Kills
         #region AutoKill
@@ -823,7 +887,7 @@ namespace MoreAdminCommands
                     TShock.Utils.SendMultipleMatchError(args.Player, tply);
                 }
 
-                else if (tply.Count() < 1)
+                else if (tply.Count() == 1)
                 {
                     if (readTableName.Contains(args.Parameters[0].ToLower()))
                     {

@@ -119,8 +119,10 @@ namespace MoreAdminCommands
             Commands.ChatCommands.Add(new Command("mac.spawn", Cmds.SpawnMobPlayer, "spawnmobplayer", "smp"));
             Commands.ChatCommands.Add(new Command("mac.spawn", Cmds.SpawnGroup, "spawngroup", "sg"));
             Commands.ChatCommands.Add(new Command("mac.spawn", Cmds.SpawnByMe, "spawnbyme", "sbm"));
-            Commands.ChatCommands.Add(new Command("mac.search", Cmds.FindPerms, "findperm"));
-            Commands.ChatCommands.Add(new Command("mac.search", Cmds.FindCommand, "findcommand", "findcmd"));
+            Commands.ChatCommands.Add(new Command("mac.search", Cmds.FindPerms, "findperm", "fperm"));
+            Commands.ChatCommands.Add(new Command("mac.search", Cmds.FindCommand, "findcommand", "findcmd", "fcmd"));
+            Commands.ChatCommands.Add(new Command("mac.search", Cmds.FindItem, "finditem", "fitem"));
+            Commands.ChatCommands.Add(new Command("mac.search", Cmds.FindMob, "findmob", "fmob"));
             Commands.ChatCommands.Add(new Command("mac.butcher", Cmds.ButcherAll, "butcherall", "butcher*"));
             Commands.ChatCommands.Add(new Command("mac.butcher", Cmds.ButcherFriendly, "butcherfriendly", "butcherf"));
             Commands.ChatCommands.Add(new Command("mac.butcher", Cmds.ButcherNPC, "butchernpc"));
