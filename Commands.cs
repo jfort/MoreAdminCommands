@@ -963,6 +963,35 @@ namespace MoreAdminCommands
         }
         #endregion
 
+        #region Disable
+        public static void Disable(CommandArgs args)
+        {
+            if (args.Parameters.Count < 1)
+            {
+                args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /disable [player name]");
+                return;
+            }
+            var foundplr = TShock.Utils.FindPlayer(args.Parameters[0]);
+            if (foundplr.Count == 0)
+            {
+                args.Player.SendErrorMessage("Invalid player!");
+                return;
+            }
+            else if (foundplr.Count > 1)
+            {
+                TShock.Utils.SendMultipleMatchError(args.Player, foundplr);
+                return;
+            }
+            else
+            {
+                var player = Utils.GetPlayers(foundplr[0].Index);
+                player.isDisabled = !player.isDisabled;
+                args.Player.SendSuccessMessage(string.Format("{0}abled {1}!", player.isDisabled ? "Dis" : "En",player.name));
+                foundplr[0].SendMessage(string.Format("{0} {1}abled you!", args.Player.Name, player.isDisabled ? "dis" : "en"), Color.Red);
+            }
+        }
+        #endregion
+
 
         //Butchering
         #region ButcherNear
