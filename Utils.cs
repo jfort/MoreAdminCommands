@@ -236,8 +236,6 @@ namespace MoreAdminCommands
 
                     if (checkGroup.groupname == nGroup)
                     {
-                        flag = true;
-
                         foreach (KeyValuePair<string, int> pair in checkGroup.npcDetails)
                         {
                             var mobs = TShock.Utils.GetNPCByName(pair.Key);
@@ -248,8 +246,6 @@ namespace MoreAdminCommands
                         player.SendSuccessMessage("Spawned mobs from group " + nGroup);
                     }
                 }
-                if (flag)
-                    break;
             }
         }
         #endregion

@@ -205,6 +205,9 @@ namespace MoreAdminCommands
                             player.autoKill ? "En" : "Dis", player.name));
                         player.TSPlayer.SendInfoMessage(string.Format("You are {0} being auto-killed",
                             player.autoKill ? "now" : "no longer"));
+
+                        if (player.autoKill)
+                            updateTimers.startAutoKillTimer();
                     }
                     else
                     {
@@ -284,7 +287,7 @@ namespace MoreAdminCommands
                         }
                         break;
 
-                    case "yellow": 
+                    case "yellow":
                         if (str == MAC.config.yellowPass)
                         {
                             player.accessYellow = true;
@@ -320,10 +323,12 @@ namespace MoreAdminCommands
             if (MAC.timeFrozen)
             {
                 TSPlayer.All.SendInfoMessage(args.Player.Name.ToString() + " froze time.");
+                updateTimers.startTimeTimer();
             }
             else
             {
                 TSPlayer.All.SendInfoMessage(args.Player.Name.ToString() + " unfroze time.");
+                updateTimers.stopTimeTimer();
             }
         }
         #endregion
@@ -613,7 +618,7 @@ namespace MoreAdminCommands
             args.Player.SendInfoMessage("Reloaded MoreAdminCommands config file");
         }
         #endregion
-        
+
 
         //Buffs
         #region Permabuff
@@ -660,6 +665,9 @@ namespace MoreAdminCommands
 
                     ply.SendInfoMessage(string.Format("{0} has {1}tivated permabuffs on you",
                         args.Player.Name, (player.isPermabuff ? "ac" : "deac")));
+
+                    if (player.isPermabuff)
+                        updateTimers.startPermaBuffTimer();
                 }
             }
         }
@@ -709,6 +717,9 @@ namespace MoreAdminCommands
 
                     player.TSPlayer.SendInfoMessage(string.Format("{0} has {1}tivated permament debuffs on you",
                        args.Player, player.isPermaDebuff ? "ac" : "deac"));
+
+                    if (player.isPermaDebuff)
+                        updateTimers.startPermaDebuffTimer();
                 }
             }
         }
@@ -859,7 +870,7 @@ namespace MoreAdminCommands
                 }
 
                 TSPlayer.All.SendInfoMessage(args.Player.Name + " has muted everyone.");
-                args.Player.SendSuccessMessage("You have muted everyone without the mute permission. " + 
+                args.Player.SendSuccessMessage("You have muted everyone without the mute permission. " +
                     "They will remain muted until you use /muteall again.");
             }
             else
@@ -949,7 +960,10 @@ namespace MoreAdminCommands
             player.viewAll = !player.viewAll;
 
             if (player.viewAll)
+            {
                 args.Player.SendInfoMessage("View All mode has been turned on.");
+                updateTimers.startViewTimer();
+            }
 
             else
             {
@@ -986,7 +1000,11 @@ namespace MoreAdminCommands
             {
                 var player = Utils.GetPlayers(foundplr[0].Index);
                 player.isDisabled = !player.isDisabled;
-                args.Player.SendSuccessMessage(string.Format("{0}abled {1}!", player.isDisabled ? "Dis" : "En",player.name));
+
+                if (player.isDisabled)
+                    updateTimers.startDisableTimer();
+
+                args.Player.SendSuccessMessage(string.Format("{0}abled {1}!", player.isDisabled ? "Dis" : "En", player.name));
                 foundplr[0].SendMessage(string.Format("{0} {1}abled you!", args.Player.Name, player.isDisabled ? "dis" : "en"), Color.Red);
             }
         }
@@ -1010,7 +1028,7 @@ namespace MoreAdminCommands
             int killcount = 0;
             for (int i = 0; i < Main.npc.Length; i++)
             {
-                if ((Main.npc[i].active && 
+                if ((Main.npc[i].active &&
                     Utils.getDistance(new Vector2(args.Player.X, args.Player.Y), Main.npc[i].position, nearby)))
                 {
                     TSPlayer.Server.StrikeNPC(i, 99999, 1f, 1);

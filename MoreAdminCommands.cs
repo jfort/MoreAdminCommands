@@ -31,7 +31,7 @@ namespace MoreAdminCommands
         public static SqlTableCreator SQLWriter;
 
         public static double timeToFreezeAt = 1000;
-        public int viewAllTeam = 4;
+        public static int viewAllTeam = 4;
 
         public static bool timeFrozen = false;
         public static bool cansend = false;
@@ -338,7 +338,8 @@ namespace MoreAdminCommands
                         {
                             var player = Utils.GetPlayers((int)ply);
 
-                            try{
+                            try
+                            {
                                 switch (team)
                                 {
                                     case 1:
@@ -462,93 +463,77 @@ namespace MoreAdminCommands
         #region OnUpdate
         private void OnUpdate(EventArgs args)
         {
-            if ((DateTime.UtcNow - LastCheck).TotalSeconds >= 1)
-            {
-                LastCheck = DateTime.UtcNow;
-                if (timeFrozen)
-                {
-                    if (Main.dayTime != freezeDayTime)
-                    {
-                        if (timeToFreezeAt > 10000)
-                        {
-                            timeToFreezeAt -= 100;
-                        }
-                        else
-                        {
-                            timeToFreezeAt += 100;
-                        }
-                    }
-                    TSPlayer.Server.SetTime(freezeDayTime, timeToFreezeAt);
-                }
+            //if ((DateTime.UtcNow - LastCheck).TotalSeconds >= 1)
+            //{
+            //    LastCheck = DateTime.UtcNow;
+            //if (timeFrozen)
+            //{
+            //    if (Main.dayTime != freezeDayTime)
+            //    {
+            //        if (timeToFreezeAt > 10000)
+            //        {
+            //            timeToFreezeAt -= 100;
+            //        }
+            //        else
+            //        {
+            //            timeToFreezeAt += 100;
+            //        }
+            //    }
+            //    TSPlayer.Server.SetTime(freezeDayTime, timeToFreezeAt);
+            //}
 
-                foreach (Mplayer player in Players)
-                {
+            //foreach (Mplayer player in Players)
+            //{
 
-                    if (player.autoKill)
-                    {
-                        player.TSPlayer.DamagePlayer(9999);
-                    }
+            //if (player.autoKill)
+            //{
+            //    player.TSPlayer.DamagePlayer(9999);
+            //}
 
-                    if (player.viewAll)
-                    {
-                        foreach (TSPlayer tply in TShock.Players)
-                        {
-                            try
-                            {
-                                int prevTeam = Main.player[tply.Index].team;
-                                Main.player[tply.Index].team = viewAllTeam;
-                                NetMessage.SendData((int)PacketTypes.PlayerTeam, player.Index, -1, "", tply.Index);
-                                Main.player[tply.Index].team = prevTeam;
+            //if (player.viewAll)
+            //{
+            //    foreach (TSPlayer tply in TShock.Players)
+            //    {
+            //        try
+            //        {
+            //            int prevTeam = Main.player[tply.Index].team;
+            //            Main.player[tply.Index].team = viewAllTeam;
+            //            NetMessage.SendData((int)PacketTypes.PlayerTeam, player.Index, -1, "", tply.Index);
+            //            Main.player[tply.Index].team = prevTeam;
 
-                            }
-                            catch (Exception) { }
-                        }
-                    }
+            //        }
+            //        catch (Exception) { }
+            //    }
+            //}
 
-                    if (player.muted)
-                    {
-                        if (player.muteTime > 0)
-                        {
-                            player.muteTime -= 1;
+            //if (player.isPermabuff)
+            //{
+            //    foreach (int activeBuff in player.TSPlayer.TPlayer.buffType)
+            //    {
+            //        if (!Main.debuff[activeBuff])
+            //        {
+            //            player.TSPlayer.SetBuff(activeBuff, Int16.MaxValue);
+            //        }
+            //    }
+            //}
 
-                            if (player.muteTime <= 0)
-                            {
-                                player.muted = false;
-                                player.muteTime = -1;
+            //if (player.isPermaDebuff)
+            //{
+            //    foreach (int activeBuff in player.TSPlayer.TPlayer.buffType)
+            //    {
+            //        if (Main.debuff[activeBuff])
+            //        {
+            //            player.TSPlayer.SetBuff(activeBuff, Int16.MaxValue);
+            //        }
+            //    }
+            //}
 
-                                player.TSPlayer.SendSuccessMessage("Your mute has run out, and you're free to talk again");
-                            }
-                        }
-                    }
-
-                    if (player.isPermabuff)
-                    {
-                        foreach (int activeBuff in player.TSPlayer.TPlayer.buffType)
-                        {
-                            if (!Main.debuff[activeBuff])
-                            {
-                                player.TSPlayer.SetBuff(activeBuff, Int16.MaxValue);
-                            }
-                        }
-                    }
-
-                    if (player.isPermaDebuff)
-                    {
-                        foreach (int activeBuff in player.TSPlayer.TPlayer.buffType)
-                        {
-                            if (Main.debuff[activeBuff])
-                            {
-                                player.TSPlayer.SetBuff(activeBuff, Int16.MaxValue);
-                            }
-                        }
-                    }
-
-                    if (player.isDisabled)
-                    {
-                        player.TSPlayer.SetBuff(47, 180);
-                    }
-                }
-            }
+            //if (player.isDisabled)
+            //{
+            //    player.TSPlayer.SetBuff(47, 180);
+            //}
+            //}
+            //}
         }
         #endregion
 
@@ -575,8 +560,7 @@ namespace MoreAdminCommands
                 args.Handled = true;
             }
 
-            if (((Mplayer.muted) && (Utils.findIfMeCommand(args.Text))) ||
-                ((muteAll) && (!TShock.Players[args.Who].Group.HasPermission("mute"))))
+            if ((muteAll) && (!TShock.Players[args.Who].Group.HasPermission("mute")) && args.Text.StartsWith("/me"))
             {
                 TShock.Players[args.Who].SendMessage("You cannot use the /me command, you are muted.", Color.Red);
                 args.Handled = true;
@@ -590,7 +574,7 @@ namespace MoreAdminCommands
                 Utils.parseParameters(tempText);
             }
 
-            if ((Mplayer.muted || muteAll) && !TShock.Players[args.Who].Group.HasPermission("mute"))
+            if (muteAll && !TShock.Players[args.Who].Group.HasPermission("mute"))
             {
                 var tsplr = TShock.Players[args.Who];
                 if (args.Text.StartsWith("/"))
@@ -599,21 +583,7 @@ namespace MoreAdminCommands
                 }
                 else
                 {
-                    if (!muteAll)
-                    {
-                        if (Mplayer.muteTime <= 0)
-                        {
-                            tsplr.SendMessage("You have been muted by an admin.", Color.Red);
-                        }
-                        else
-                        {
-                            tsplr.SendMessage("You have " + Mplayer.muteTime + " seconds left of muting.", Color.Red);
-                        }
-                    }
-                    else
-                    {
-                        tsplr.SendMessage("The server is now muted for this reason: " + config.muteAllReason, Color.Red);
-                    }
+                    tsplr.SendErrorMessage("The server has been muted: " + config.muteAllReason);
                 }
                 args.Handled = true;
             }
